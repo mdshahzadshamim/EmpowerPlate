@@ -1,0 +1,9 @@
+.env
+/node_modules
+empowerplate_frontend
+empowerplate_backend/.env
+empowerplate_backend/client
+empowerplate_backend/node_modules
+empowerplate_backend/constants.js
+empowerplate_backend/public
+empowerplate_backend/src/more
