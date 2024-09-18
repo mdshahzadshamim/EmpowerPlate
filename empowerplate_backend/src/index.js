@@ -1,8 +1,8 @@
 import { config } from "./config/config.js";
-import connectDB from "./db/index.js";
+import connectMongoDB from "./db/mongoDbConnection.js";
 import { app } from "./app.js";
 
-connectDB()
+connectMongoDB()
     .then(() => {
         app.on("error", (error) => {
             console.log("Error : ", error);

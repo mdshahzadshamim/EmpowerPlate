@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import { options } from "../utils/Options.js";
 import { config } from "../config/config.js";
+import { Request } from "../models/request.model.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -27,20 +28,40 @@ const generateAccessAndRefreshToken = async (userId) => {
     }
 }
 
-const registerUser = asyncHandler(async (req, res) => {
-    const { username, email, name, password, userType, city } = req.body;
+const loggedInUser = async (req) => {
+    const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
 
-    if ([username, email, name, password, userType, city].some((field) => field?.trim() === ""))
+    if (!token)
+        return false;
+
+    const decodedToken = jwt.verify(token, config.accessTokenSecret);
+
+    const user = await User.findById(decodedToken?._id).select("-password -refreshToken");
+    // const user = await User.findOne({ refreshToken: reauest.cookies?.refreshToken }).select("-password -refreshToken");
+
+    if (!user)
+        return false;
+
+    console.log(user.username, " is already logged in");
+
+    return user;
+}
+
+const registerUser = asyncHandler(async (req, res) => {
+    const { username, email, phone, name, password, userType, city } = req.body;
+
+    if ([username, phone, email, name, password, userType, city].some((field) => field?.trim() === ""))
         throw new APIError(401, "All fields are required");
 
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    const existingUser = await User.findOne({ $or: [{ username }, { email }, { phone }] });
 
     if (existingUser)
         throw new APIError(401, "User exists");
 
     const user = await User.create({
         username: username.toLowerCase(),
-        email,
+        email: email.toLowerCase(),
+        phone,
         name,
         password,
         userType,
@@ -52,7 +73,7 @@ const registerUser = asyncHandler(async (req, res) => {
     if (!createdUser)
         throw new APIError(401, "User creation error");
 
-    // console.log(200, createdUser, "Registered Successfully");
+    console.log(createdUser.username, " registered successfully");
 
     return res
         .status(200)
@@ -68,12 +89,27 @@ const registerUser = asyncHandler(async (req, res) => {
 })
 
 const logInUser = asyncHandler(async (req, res) => {
-    const { username, email, password } = req.body;
+    const alreadyLoggedInUser = await loggedInUser(req);
+    if (alreadyLoggedInUser) {
+        return res
+            .status(200)
+            .json(
+                new APIResponse(
+                    200,
+                    {
+                        user: alreadyLoggedInUser
+                    },
+                    "A user is already logged in"
+                )
+            )
+    }
 
-    if (!(username || email))
-        throw new APIError(401, "Email or Username is required");
+    const { username, email, phone, password } = req.body;
 
-    const user = await User.findOne({ $or: [{ username }, { email }] });
+    if (!(username || email || phone))
+        throw new APIError(401, "Email/Phone/Username is required");
+
+    const user = await User.findOne({ $or: [{ username }, { email }, { phone }] });
 
     if (!user)
         throw new APIError(401, "User doesn't exist");
@@ -87,6 +123,8 @@ const logInUser = asyncHandler(async (req, res) => {
 
     const loggedUser = await User.findById(user._id).select("-password -refreshToken")
 
+    console.log(user.username, " logged in");
+
     return res
         .status(200)
         .cookie("accessToken", accessToken, options)
@@ -95,9 +133,7 @@ const logInUser = asyncHandler(async (req, res) => {
             new APIResponse(
                 200,
                 {
-                    user: loggedUser,
-                    accessToken,
-                    refreshToken
+                    user: loggedUser
                 },
                 "Login Successful"
             )
@@ -132,6 +168,8 @@ const logOutUser = asyncHandler(async (req, res) => {
         }
     )
 
+    console.log("User has been logged out");
+
     return res
         .status(200)
         .clearCookie("accessToken", options)
@@ -146,6 +184,8 @@ const logOutUser = asyncHandler(async (req, res) => {
 })
 
 const getCurrentUser = asyncHandler(async (req, res) => {
+    console.log("Current User: ", req.user);
+
     return res
         .status(200)
         .json(
@@ -176,6 +216,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             throw new APIError(401, "User not found: Invalid refresh token");
 
         const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+    
+        console.log("Access token rehreshed");
 
         return res
             .status(200)
@@ -184,10 +226,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             .json(
                 new APIResponse(
                     200,
-                    {
-                        accessToken,
-                        refreshToken
-                    },
+                    {},
                     "Access token refreshed"
                 )
             )
@@ -214,6 +253,8 @@ const updateUserDetails = asyncHandler(async (req, res) => {
             new: true
         }
     ).select("-password -refreshToken")
+
+    console.log("User details");
 
     return res
         .status(200)
@@ -243,6 +284,8 @@ const updateUserPassword = asyncHandler(async (req, res) => {
 
     await user.save({ validateBeforeSave: false });
 
+    console.log("Password updated");
+
     return res
         .status(200)
         .json(
@@ -254,14 +297,101 @@ const updateUserPassword = asyncHandler(async (req, res) => {
         )
 })
 
-const getAllChats = asyncHandler(async (req, res) => {
-    ;
+const getAllLinkedRequests = asyncHandler(async (req, res) => {
+    let requests;
+    if (req.user.userType === "ADMIN") {
+        requests = await Request.aggregate([
+            {
+                $match: {
+                    admin: new mongoose.Types.ObjectId(String(req.user._id))
+                }
+            },
+            {
+                $project: {
+                    statusHistory: 0
+                }
+            }
+        ])
+    } else if (req.user.userType === "VOLUNTEER") {
+        requests = await Request.aggregate([
+            {
+                $match: {
+                    volunteer: new mongoose.Types.ObjectId(String(req.user._id))
+                }
+            },
+            {
+                $project: {
+                    statusHistory: 0
+                }
+            }
+        ])
+    } else if (req.user.userType === "END_USER") {
+        requests = await Request.aggregate([
+            {
+                $match: {
+                    requester: new mongoose.Types.ObjectId(String(req.user._id))
+                }
+            },
+            {
+                $project: {
+                    statusHistory: 0
+                }
+            }
+        ])
+    } else {
+        throw new APIError(400, "Invalid User");
+    }
+
+    if (!requests)
+        throw new APIError(400, "No related requests");
+
+    console.log("Linked requests returned");
+
+    return res
+        .status(200)
+        .json(
+            new APIResponse(
+                200,
+                requests,
+                "Linked requests returned"
+            )
+        )
 })
 
-const getChat = asyncHandler(async (req, res) => {
-    ;
+const getPendingRequestsByAdmin = asyncHandler(async (req, res) => {
+    if (req.user.userType !== "ADMIN")
+        throw new APIError(400, "Unauthorized User");
+
+    const requests = await Request.aggregate([
+        {
+            $match: {
+                currentStatus: "PENDING"
+            }
+        },
+        {
+            $project: {
+                statusHistory: 0
+            }
+        }
+    ])
+
+    if (!requests)
+        throw new APIError(400, "No pending requests");
+
+    console.log("Pending requests returned");
+    
+    return res
+        .status(200)
+        .json(
+            new APIResponse(
+                200,
+                requests,
+                "Pending requests returned"
+            )
+        )
 })
 
+// const getChat = asyncHandler(async (req, res) => {})
 // const verifyEmail = asyncHandler(async (req, res) => {})
 // const getPasskey = asyncHandler(async (req, res) => {})
 // const generateNewPasskey = asyncHandler(async (req, res) => {})
@@ -274,8 +404,9 @@ export {
     refreshAccessToken,
     updateUserDetails,
     updateUserPassword,
-    getAllChats,
-    getChat,
+    getAllLinkedRequests,
+    getPendingRequestsByAdmin
+    // getChat,
     // verifyEmail,
     // getPasskey,
     // generateNewPasskey,

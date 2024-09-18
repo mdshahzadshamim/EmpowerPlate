@@ -14,7 +14,7 @@ export const verifyRequest = asyncHandler(async (req, _, next) => {
         if (request.currentStatus === "CANCELLED" || request.currentStatus === "REJECTED")
             throw new APIError(400, "Cancelled/Rejected Request");
 
-        if (request.city !== user.city)
+        if (request.city !== req.user.city)
             throw new APIError(400, "Location mismatch");
 
         req.request = request;

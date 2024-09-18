@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { config } from "../config/config.js";
+import { grainOrFlourTypes } from "../../constants.js";
 
 const statusHistorySchema = new Schema({
     status: {
@@ -43,19 +44,8 @@ const cookedFoodSchema = new Schema({
 const rawFoodSchema = new Schema({
     grainOrFlourType: {
         type: String,
-        enum: [
-            "RICE",
-            "RICE_FLOUR",
-            "WHEAT",
-            "WHEAT_FLOUR",
-            "WHEAT",
-            "WHEAT_FLOUR",
-            "OTHER"
-        ],
+        enum: grainOrFlourTypes,
         required: true
-    },
-    other: { // In case the grainOrFlourType is not one of the above
-        type: String
     },
     amountInKg: {
         type: Number,

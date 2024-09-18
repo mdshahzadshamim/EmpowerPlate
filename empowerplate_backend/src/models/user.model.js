@@ -15,10 +15,29 @@ const userSchema = new Schema({
     },
     email: {
         type: String,
+        unique: true,
+        required: true,
+        lowercase: true,
+        trim: true,
+        validate: {
+            validator: function (v) {
+                return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v);
+            },
+            message: props => `${props.value} is not a valid email!`
+        },
+        default: undefined
+    },
+    phone: {
+        type: String,
         required: true,
         unique: true,
-        lowercase: true,
-        trim: true
+        trim: true,
+        validate: {
+            validator: function (v) {
+                return /^(\+91[\-\s]?)?[6-9]\d{9}$|^(\+91[\-\s]?)?0\d{2,4}[\-\s]?\d{6,8}$/.test(v);
+            },
+            message: props => `${props.value} is not a valid Indian phone number!`
+        }
     },
     name: {
         type: String,
@@ -37,7 +56,6 @@ const userSchema = new Schema({
             "VOLUNTEER",
             "END_USER", // RECIPIENT, DONOR
         ],
-        required: true,
         default: "END_USER"
     },
     city: {
@@ -45,6 +63,7 @@ const userSchema = new Schema({
         enum: [
             config.currentCity,
         ],
+        uppercase: true,
         default: config.currentCity
     },
     chats: {
@@ -83,6 +102,7 @@ userSchema.methods.generateAccessToken = function () {
             {
                 _id: this._id,
                 email: this.email,
+                phone: this.phone,
                 username: this.username,
                 fullname: this.fullname
             },

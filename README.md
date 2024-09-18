@@ -4,15 +4,33 @@
 ## Tech Stack
 - Backend: Node.js
 - Routing: Express.js
-- Database: MongoDB, with mongoose
+- Databases
+   - MongoDB, with mongoose, for user & request management
+   - PostgreSQL, with pg, for dedicated food-bank management
 - Frontend: React.js, _under development, with geo-location based features using Google Maps API_
 - Authentication: JWT for Authentication
 - Password hashing: Bcrypt
 
 ## Features
 - Create & Modify User
+   - registerUser
+   - logInUser
+   - logOutUser
+   - getCurrentUser
+   - refreshAccessToken
+   - updateUserDetails
+   - updateUserPassword
+   - getAllRequests
+   - getPendingRequestsByAdmin
 - Create & Modify Request
-- Modify Request Status: _Limited to specific user-types for specirfic situations_
+   - createRequest
+   - updateRequest - _Modify, Admin_
+   - getRequest
+- Modify Request Status
+   - respondToRequest - _Admin_
+   - updateRequestStatus - _Admin, Volunteer_
+   - cancelRequest - _Admin, End User_
+   - confirmFulfillmentByUser - _End User_
 
 &nbsp;
 

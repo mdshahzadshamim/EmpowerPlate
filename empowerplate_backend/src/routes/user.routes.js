@@ -8,8 +8,9 @@ import {
     refreshAccessToken,
     updateUserDetails,
     updateUserPassword,
-    getAllChats,
-    getChat,
+    getAllLinkedRequests,
+    getPendingRequestsByAdmin
+    // getChat,
     // verifyEmail,
     // getPasskey,
     // generateNewPasskey,
@@ -22,10 +23,11 @@ router.route("/login").post(logInUser);
 router.route("/logout").post(verifyJWT, logOutUser);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/refresh-token").get(verifyJWT, refreshAccessToken);
-router.route("/update-details").patch(verifyJWT, updateUserDetails)
-router.route("/update-password").post(verifyJWT, updateUserPassword)
-router.route("/get-all-chats").post(verifyJWT, getAllChats)
-router.route("/get-chat").post(verifyJWT, getChat)
+router.route("/update-details").patch(verifyJWT, updateUserDetails);
+router.route("/update-password").post(verifyJWT, updateUserPassword);
+router.route("/linked-requests").get(verifyJWT, getAllLinkedRequests);
+router.route("/pending-requests").get(verifyJWT, getPendingRequestsByAdmin);
+// router.route("/get-chat").post(verifyJWT, getChat)
 // router.route("/verify-email").post(verifyEmail)
 // router.route("/get-passkey").post(getPasskey)
 // router.route("/generate-passkey").post(generateNewPasskey)

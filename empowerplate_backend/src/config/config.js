@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-dotenv.config({path: "../.env"});
+dotenv.config({ path: "../.env" });
 
 const config = {
     port: process.env.PORT,
@@ -9,7 +9,12 @@ const config = {
     mongoDbUserId: process.env.MONGODB_USERID,
     mongoDbPass: process.env.MONGODB_PASSWORD,
     mongoDbLocalHost: process.env.MONGODB_LCALHOST_URL,
-    dbName: process.env.DB_NAME,
+    mongoDbName: process.env.MONGODB_DATABASE,
+    pgUser: process.env.POSTGRES_USER,
+    pgHost: process.env.POSTGRES_HOST,
+    pgDbName: process.env.POSTGRES_DATABASE,
+    pgPassword: process.env.POSTGRES_PASSWORD,
+    pgPort: process.env.POSTGRES_PORT,
     accessTokenSecret: process.env.ACCESS_TOKEN_SECRET,
     accessTokenExpiry: process.env.ACCESS_TOKEN_EXPIRY,
     refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET,

@@ -4,14 +4,249 @@ import { APIError } from "../utils/APIError.js";
 import { APIResponse } from "../utils/APIResponse.js";
 import { options } from "../utils/Options.js";
 import mongoose from "mongoose";
+import pool from "../db/postgresConnection.js";
 
 // Food Management - To be used within request controllers: respondToRequest, confirmFulfillmentByUser
-const addRawFood = async (rawFood) => {};
-const subtractRawFood = async (rawFood) => {};
-const checkRawFoodAvailability = async (rawFood) => {};
-const addCookedFood = async (cookedFood) => {};
-const subtractCookedFood = async (cookedFood) => {};
-const checkCookedFoodAvailability = async (cookedFood) => {};
+const addRawFood = async (rawFood) => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN'); // Start transaction
+
+        let updatedCount = 0;
+
+        for (const grain of rawFood) {
+            const { amountInKg, grainOrFlourType } = grain;
+
+            const result = await client.query(
+                `UPDATE rawFood SET amountInKg = amountInKg + $1 WHERE grainOrFlourType = $2`,
+                [amountInKg, grainOrFlourType]
+            );
+
+            if (result.rowCount > 0) {
+                updatedCount++;
+            }
+        }
+
+        // If all entries were updated, commit the transaction
+        if (updatedCount === rawFood.length) {
+            await client.query('COMMIT');
+            console.log("addRawFood: ", true, updatedCount);
+            return true;
+        } else {
+            // Rollback the transaction if not all entries were updated
+            await client.query('ROLLBACK');
+            console.log("addRawFood: ", false, transaction);
+            return false;
+        }
+    } catch (error) {
+        await client.query('ROLLBACK'); // Rollback the transaction in case of an error
+        console.error('Error adding raw food: ', error);
+        throw error;
+    } finally {
+        client.release(); // Release the client back to the pool
+    }
+};
+
+const subtractRawFood = async (rawFood) => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN'); // Start transaction
+
+        let updatedCount = 0;
+
+        for (const grain of rawFood) {
+            const { amountInKg, grainOrFlourType } = grain;
+
+            const result = await client.query(
+                `UPDATE rawFood SET amountInKg = amountInKg - $1 WHERE grainOrFlourType = $2`,
+                [amountInKg, grainOrFlourType]
+            );
+
+            if (result.rowCount > 0) {
+                updatedCount++;
+            }
+        }
+
+        // If all entries were updated, commit the transaction
+        if (updatedCount === rawFood.length) {
+            await client.query('COMMIT');
+            console.log("subtractRawFood: ", true, updatedCount);
+            return true;
+        } else {
+            // Rollback the transaction if not all entries were updated
+            await client.query('ROLLBACK');
+            console.log("subtractRawFood: ", false, updatedCount);
+            return false;
+        }
+    } catch (error) {
+        await client.query('ROLLBACK'); // Rollback the transaction in case of an error
+        console.error('Error subtracting raw food: ', error);
+        throw error;
+    } finally {
+        client.release(); // Release the client back to the pool
+    }
+};
+
+const checkRawFoodAvailability = async (rawFood) => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN'); // Start transaction
+
+        for (const grain of rawFood) {
+            const { grainOrFlourType, amountInKg } = grain;
+
+            const result = await client.query(
+                `SELECT amountInKg FROM rawFood WHERE grainOrFlourType = $1`,
+                [grainOrFlourType]
+            );
+
+            if (result.rows.length === 0) {
+                await client.query('ROLLBACK'); // Rollback the transaction if any item is not found
+                return false;
+            }
+
+            const availableAmount = parseFloat(result.rows[0].amountInKg);
+            if (availableAmount < amountInKg) {
+                await client.query('ROLLBACK'); // Rollback if not enough amount is available
+                console.log("checkRawFoodAvailability: ", false, availableAmount);
+                return false;
+            }
+        }
+
+        await client.query('COMMIT'); // Commit the transaction if all checks pass
+        console.log("checkRawFoodAvailability: ", true);
+        return true;
+    } catch (error) {
+        await client.query('ROLLBACK'); // Rollback in case of an error
+        console.error('Error checking raw food availability: ', error);
+        throw error;
+    } finally {
+        client.release(); // Release the client back to the pool
+    }
+};
+
+const addCookedFood = async (cookedFood) => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        let updatedCount = 0;
+
+        for (const food of cookedFood) {
+            const { ageGroup, count } = food;
+
+            const result = await client.query(
+                `UPDATE cookedFood SET count = count + $1 WHERE ageGroup = $2`,
+                [count, ageGroup]
+            );
+
+            if (result.rowCount > 0) {
+                updatedCount++;
+            }
+        }
+
+        if (updatedCount === cookedFood.length) {
+            await client.query('COMMIT');
+            console.log("addCookedFood: ", true, updatedCount);
+            return true;
+        } else {
+            await client.query('ROLLBACK');
+            console.log("addCookedFood: ", false, updatedCount);
+            return false;
+        }
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error adding cooked food: ', error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
+const subtractCookedFood = async (cookedFood) => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        let updatedCount = 0;
+
+        for (const food of cookedFood) {
+            const { ageGroup, count } = food;
+
+            const result = await client.query(
+                `UPDATE cookedFood SET count = count - $1 WHERE ageGroup = $2`,
+                [count, ageGroup]
+            );
+
+            if (result.rowCount > 0) {
+                updatedCount++;
+            }
+        }
+
+        if (updatedCount === cookedFood.length) {
+            await client.query('COMMIT');
+            console.log("subtractCookedFood: ", true, updatedCount);
+            return true;
+        } else {
+            await client.query('ROLLBACK');
+            console.log("subtractCookedFood: ", false, updatedCount);
+            return false;
+        }
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error subtracting cooked food: ', error);
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
+const checkCookedFoodAvailability = async (cookedFood) => {
+    const client = await pool.connect();
+
+    console.log(cookedFood);
+
+    try {
+        await client.query('BEGIN'); // Start transaction
+
+        for (const people of cookedFood) {
+            const { ageGroup, count } = people;
+
+            const result = await client.query(
+                `SELECT count FROM cookedFood WHERE ageGroup = $1`,
+                [ageGroup]
+            );
+
+            if (result.rows.length === 0) {
+                await client.query('ROLLBACK'); // Rollback the transaction if any item is not found
+                return false;
+            }
+
+            const availableCount = parseFloat(result.rows[0].count);
+            if (availableCount < count) {
+                await client.query('ROLLBACK'); // Rollback if not enough count is available
+                console.log("checkCookedFoodAvailability: ", false, availableCount);
+                return false;
+            }
+        }
+
+        await client.query('COMMIT'); // Commit the transaction if all checks pass
+        console.log("checkCookedFoodAvailability: ", true);
+        return true;
+    } catch (error) {
+        await client.query('ROLLBACK'); // Rollback in case of an error
+        console.error('Error checking cooked food availability: ', error);
+        throw error;
+    } finally {
+        client.release(); // Release the client back to the pool
+    }
+};
+
 
 const createRequest = asyncHandler(async (req, res) => {
     // if (!((req.user.userType === "RECIPIENT") || (req.user.userType === "DONOR")))
@@ -54,10 +289,10 @@ const createRequest = asyncHandler(async (req, res) => {
 
         const food = JSON.parse(req.body.cookedFood);
 
-        food.forEach((person) => {
+        food.forEach((people) => {
             cookedFood.push({
-                ageGroup: person.ageGroup,
-                count: person.count
+                ageGroup: people.ageGroup,
+                count: people.count
             })
         });
 
@@ -77,6 +312,8 @@ const createRequest = asyncHandler(async (req, res) => {
 
     if (!createdRequest)
         throw new APIError(401, "Request could not be created");
+
+    console.log("Request created successfully");
 
     return res
         .status(200)
@@ -111,6 +348,32 @@ const respondToRequest = asyncHandler(async (req, res) => {
     if (!(request.currentStatus === "PENDING"))
         throw new APIError(400, "Invalid scope: Wrong endpoint");
 
+    if (request.type === "RECEIVE") { // This condition keeps the admin-errors in check, by running food availability check
+        let foodAvailable;
+
+        if (request.foodType === "RAW") {
+            foodAvailable = await checkRawFoodAvailability(request.rawFood);
+        } else if (request.foodType === "COOKED") {
+            foodAvailable = await checkCookedFoodAvailability(request.cookedFood);
+        } else {
+            throw new APIError(400, "Improper request");
+        }
+
+        if (!foodAvailable) {
+            console.log("Enough or appropriate food is not available");
+
+            return res
+                .status(250)
+                .json(
+                    new APIResponse(
+                        250,
+                        {},
+                        "Enough or appropriate food is not available"
+                    )
+                )
+        }
+    }
+
     request.admin = req.user._id;
     request.currentStatus = status;
 
@@ -120,7 +383,24 @@ const respondToRequest = asyncHandler(async (req, res) => {
     request.statusHistory.push({ status: status });
 
     try {
+        if (request.type === "RECEIVE" && status === "ACCEPTED") { // Receive-requests are getting accepted by admin, updating food-bank
+            let transaction;
+
+            if (request.foodType === "RAW") {
+                transaction = await subtractRawFood(request.rawFood);
+            } else if (request.foodType === "COOKED") {
+                transaction = await subtractCookedFood(request.cookedFood);
+            } else {
+                throw new APIError(400, "Improper request");
+            }
+
+            if (!transaction)
+                throw new APIError(400, "Database update error");
+        }
+
         await request.save({ validateBeforeSave: false });
+
+        console.log("Request successfully responded");
 
         return res
             .status(200)
@@ -141,7 +421,7 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
     // current status should not be pending, cancelled, or rejected // Note: cancelled already checked earlier
     // if request type = donate, options: ontheway, fulfilled
     //      if current status = accepted, option: ontheway
-    //      else if current status = halfway, option: fullfilled 
+    //      else if current status = halfway, option: fulfilled 
     // else if request type = receive, options: ontheway
     //      if current status = accepted, option: ontheway
     // update status history
@@ -157,11 +437,21 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
         throw new APIError(400, "Request is Pending with Admin/Rejected/Cancelled");
 
     if (request.type === "DONATE") {
-        if (request.currentStatus === "ACCEPTED" && status === "ONTHEWAY")
+        if (request.currentStatus === "ACCEPTED" && status === "ONTHEWAY") {
             request.currentStatus = status;
-        else if (request.currentStatus === "HALFWAY" && status === "FULLFILLED")
-            request.currentStatus = status;
-        else
+        } else if (request.currentStatus === "HALFWAY" && status === "FULFILLED" && req.user.userType === "ADMIN") {
+            let transaction;
+
+            if (request.foodType === "RAW")
+                transaction = await addRawFood(request.rawFood);
+            else if (request.foodType === "COOKED")
+                transaction = await addCookedFood(request.cookedFood);
+
+            if (!transaction)
+                throw new APIError(400, "Database update error");
+
+            request.currentStatus = status; // Donate-requests are getting fulfillment confirmation by admin, updating food-bank
+        } else
             throw new APIError(400, "This status update is not allowed: Donate");
     } else if (request.type === "RECEIVE") {
         if (request.currentStatus === "ACCEPTED" && status === "ONTHEWAY")
@@ -176,13 +466,15 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
     try {
         await request.save({ validateBeforeSave: false });
 
+        console.log("Request status updated successfully");
+
         return res
             .status(200)
             .json(
                 new APIResponse(
                     200,
                     request,
-                    "Request successfully updated"
+                    "Request status updated successfully"
                 )
             )
     } catch (error) {
@@ -222,12 +514,14 @@ const updateRequest = asyncHandler(async (req, res) => {
         if (!updatedRequest)
             throw new APIError(400, "Request couldn't be updated: Raw Food");
 
+        console.log("Request updated: Raw Food");
+
         return res
             .status(200)
             .json(
                 new APIResponse(
                     200,
-                    {},
+                    updatedRequest,
                     "Request updated: Raw Food"
                 )
             )
@@ -258,6 +552,8 @@ const updateRequest = asyncHandler(async (req, res) => {
         if (!updatedRequest)
             throw new APIError(400, "Request couldn't be updated: Cooked Food");
 
+        console.log("Request updated: Cooked Food");
+
         return res
             .status(200)
             .json(
@@ -272,24 +568,31 @@ const updateRequest = asyncHandler(async (req, res) => {
 });
 
 const cancelRequest = asyncHandler(async (req, res) => {
-    const { request, currentStatus, statusHistory } = req.request;
+    const { request } = req;
     const { reason, status } = req.body;
+
+    if (!status === "CANCELLED")
+        throw new APIError(400, `Invalid update specification: ${status}`);
+    if(!reason)
+        reason = "Cancelled without any reason";
 
     if (req.user.userType === "VOLUNTEER")
         throw new APIError(400, "Volunteers aren't authorized");
 
-    if (!(currentStatus === "ACCEPTED" || request.currentStatus === "ONTHEWAY"))
+    if (!(request.currentStatus === "ACCEPTED" || request.currentStatus === "ONTHEWAY"))
         throw new APIError(400, "Can't be cancelled");
 
-    currentStatus = status;
+    request.currentStatus = status;
 
-    statusHistory.push({ status });
+    request.statusHistory.push({ status });
 
     const cancelledRequest = await Request.findByIdAndUpdate(
         request._id,
         {
             $set: {
-                currentStatus, statusHistory, reasonToCancel: reason
+                currentStatus: request.currentStatus,
+                statusHistory: request.statusHistory,
+                reasonToCancel: reason
             }
         },
         {
@@ -299,6 +602,24 @@ const cancelRequest = asyncHandler(async (req, res) => {
 
     if (!cancelledRequest)
         throw new APIError(400, "Request couldn't cancelled: Database update error");
+
+    let transaction = 0;
+
+    if (request.type === "RECEIVE") {
+        if (request.foodType === "RAW") {
+            transaction = await addRawFood(request.rawFood);
+        } else if (request.foodType === "COOKED") {
+            transaction = await addCookedFood(request.cookedFood);
+        }
+        else {
+            throw new APIError(400, "Invalid cancel request");
+        }
+    }
+
+    if(!transaction)
+        throw new APIError(400, "Database couldn't be updated");
+
+    console.log("Request cancelled successfully");
 
     return res
         .status(200)
@@ -313,6 +634,8 @@ const cancelRequest = asyncHandler(async (req, res) => {
 
 const getRequest = asyncHandler(async (req, res) => {
     const { request } = req;
+
+    console.log("Request details returned");
 
     return res
         .status(200)
@@ -333,17 +656,19 @@ const confirmFulfillmentByUser = asyncHandler(async (req, res) => {
     const { request } = req;
     const { status } = req.body;
 
-    if (request.type === "DONATE" && request.currentStatus === "ONTHEWAY" && status === "HALFWAY")
+    if (request.type === "DONATE" && request.currentStatus === "ONTHEWAY" && status === "HALFWAY") {
         request.currentStatus = status;
-    else if (request.type === "RECEIVE" && request.currentStatus === "ONTHEWAY" && status === "FULFILLED")
+    } else if (request.type === "RECEIVE" && request.currentStatus === "ONTHEWAY" && status === "FULFILLED") {
         request.currentStatus = status;
-    else
+    } else
         throw new APIError(400, "Invalid request type");
 
     request.statusHistory.push({ status: status });
 
     try {
         await request.save({ validateBeforeSave: false });
+
+        console.log("Request successfully updated");
 
         return res
             .status(200)
