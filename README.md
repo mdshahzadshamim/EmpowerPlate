@@ -20,7 +20,7 @@
    - refreshAccessToken
    - updateUserDetails
    - updateUserPassword
-   - getAllRequests
+   - getAllLinkedRequests
    - getPendingRequestsByAdmin
 - Create & Modify Request
    - createRequest
