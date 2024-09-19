@@ -216,7 +216,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             throw new APIError(401, "User not found: Invalid refresh token");
 
         const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
-    
+
         console.log("Access token rehreshed");
 
         return res
@@ -298,9 +298,10 @@ const updateUserPassword = asyncHandler(async (req, res) => {
 })
 
 const getAllLinkedRequests = asyncHandler(async (req, res) => {
-    let requests;
+    let cursor;
+
     if (req.user.userType === "ADMIN") {
-        requests = await Request.aggregate([
+        cursor = Request.aggregate([
             {
                 $match: {
                     admin: new mongoose.Types.ObjectId(String(req.user._id))
@@ -310,10 +311,13 @@ const getAllLinkedRequests = asyncHandler(async (req, res) => {
                 $project: {
                     statusHistory: 0
                 }
+            },
+            {
+                $sort: { createdAt: -1 }  // Sort by latest first
             }
-        ])
+        ]).cursor();
     } else if (req.user.userType === "VOLUNTEER") {
-        requests = await Request.aggregate([
+        cursor = Request.aggregate([
             {
                 $match: {
                     volunteer: new mongoose.Types.ObjectId(String(req.user._id))
@@ -323,10 +327,13 @@ const getAllLinkedRequests = asyncHandler(async (req, res) => {
                 $project: {
                     statusHistory: 0
                 }
+            },
+            {
+                $sort: { createdAt: -1 }
             }
-        ])
+        ]).cursor();
     } else if (req.user.userType === "END_USER") {
-        requests = await Request.aggregate([
+        cursor = Request.aggregate([
             {
                 $match: {
                     requester: new mongoose.Types.ObjectId(String(req.user._id))
@@ -336,33 +343,42 @@ const getAllLinkedRequests = asyncHandler(async (req, res) => {
                 $project: {
                     statusHistory: 0
                 }
+            },
+            {
+                $sort: { createdAt: -1 }
             }
-        ])
+        ]).cursor();
     } else {
         throw new APIError(400, "Invalid User");
     }
 
-    if (!requests)
-        throw new APIError(400, "No related requests");
+    // Set the response headers for JSON streaming
+    res.setHeader('Content-Type', 'application/json');
+    res.write('[');  // Start the JSON array
 
-    console.log("Linked requests returned");
-
-    return res
-        .status(200)
-        .json(
-            new APIResponse(
-                200,
-                requests,
-                "Linked requests returned"
-            )
-        )
-})
+    let first = true;
+    cursor.eachAsync(doc => {
+        if (!first) {
+            res.write(',');  // Add a comma between documents
+        }
+        res.write(JSON.stringify(doc));
+        first = false;
+    })
+        .then(() => {
+            res.write(']');  // Close the JSON array
+            res.end();
+        })
+        .catch(error => {
+            console.error('Error streaming requests:', error);
+            res.status(500).json({ error: 'Failed to stream requests' });
+        });
+});
 
 const getPendingRequestsByAdmin = asyncHandler(async (req, res) => {
     if (req.user.userType !== "ADMIN")
         throw new APIError(400, "Unauthorized User");
 
-    const requests = await Request.aggregate([
+    const cursor = Request.aggregate([
         {
             $match: {
                 currentStatus: "PENDING"
@@ -372,24 +388,34 @@ const getPendingRequestsByAdmin = asyncHandler(async (req, res) => {
             $project: {
                 statusHistory: 0
             }
+        },
+        {
+            $sort: { createdAt: 1 }  // Sort by oldest first
         }
-    ])
+    ]).cursor();
 
-    if (!requests)
-        throw new APIError(400, "No pending requests");
+    // Set the response headers for JSON streaming
+    res.setHeader('Content-Type', 'application/json');
+    res.write('[');  // Start the JSON array
 
-    console.log("Pending requests returned");
-    
-    return res
-        .status(200)
-        .json(
-            new APIResponse(
-                200,
-                requests,
-                "Pending requests returned"
-            )
-        )
-})
+    let first = true;
+    cursor.eachAsync(doc => {
+        if (!first) {
+            res.write(',');  // Add a comma between documents
+        }
+        res.write(JSON.stringify(doc));
+        first = false;
+    })
+        .then(() => {
+            res.write(']');  // Close the JSON array
+            res.end();
+        })
+        .catch(error => {
+            console.error('Error streaming pending requests:', error);
+            res.status(500).json({ error: 'Failed to stream pending requests' });
+        });
+});
+
 
 // const getChat = asyncHandler(async (req, res) => {})
 // const verifyEmail = asyncHandler(async (req, res) => {})
