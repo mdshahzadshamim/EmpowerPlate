@@ -7,6 +7,11 @@ import mongoose from "mongoose";
 import { options } from "../utils/Options.js";
 import { config } from "../config/config.js";
 import { Request } from "../models/request.model.js";
+import axios from "axios";
+import nodemailer from "nodemailer";
+import { OAuth2Client } from "google-auth-library";
+import { sendEmail } from "../utils/sendEmail.js";
+
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -45,6 +50,16 @@ const loggedInUser = async (req) => {
     console.log(user.username, " is already logged in");
 
     return user;
+}
+
+const generateOTP = () => {
+    const str = "0123456789";
+    let num = "";
+    for (let i = 0; i < 6; i++) {
+        let index = Math.floor(Math.random() * 10);
+        num += str[index];
+    }
+    return num;
 }
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -416,9 +431,96 @@ const getPendingRequestsByAdmin = asyncHandler(async (req, res) => {
         });
 });
 
+const sendCode = asyncHandler(async (req, res) => {
+    const { user } = req;
+    const code = generateOTP();
+
+    console.log(user);
+
+    const sendie = user.email;
+    const emailSubject = "Email Verification";
+    const emailContent = `Your One Time Password is ${code}\n Valid for 10 minutes`;
+
+    const emailSent = await sendEmail({ sendie, emailSubject, emailContent });
+
+    if (emailSent) {
+        const expiration = new Date(Date.now() + 10 * 60 * 1000);
+        const otp = { code, expiration };
+        user.otp = otp;
+        await user.save({ validateBeforeSave: false });
+
+        return res
+            .status(200)
+            .json(
+                new APIResponse(
+                    200,
+                    {},
+                    "Verification OTP Sent"
+                )
+            )
+    }
+    else
+        throw new APIError(400, "Email was not sent");
+});
+
+const verifyEmail = asyncHandler(async (req, res) => {
+    const { code } = req.body;
+    const { user } = req;
+
+    if (user.otp.expiration < Date.now()) {
+        const unverifiedUser = await User.findByIdAndUpdate(
+            user._id,
+            {
+                $unset: {
+                    otp: 1
+                }
+            },
+            {
+                new: true
+            }
+        ).select("-password -refreshToken")
+
+        return res
+            .status(200)
+            .json(
+                new APIResponse(
+                    200,
+                    unverifiedUser,
+                    "OTP Expired"
+                )
+            )
+    } else if (user.otp.expiration >= Date.now() && user.otp.code === code) {
+        // user.isVerified = true;
+        const verifiedUser = await User.findByIdAndUpdate(
+            user._id,
+            {
+                $set: {
+                    isVerified: true
+                },
+                $unset: {
+                    otp: 1
+                }
+            },
+            {
+                new: true
+            }
+        ).select("-password -refreshToken")
+
+        return res
+            .status(200)
+            .json(
+                new APIResponse(
+                    200,
+                    verifiedUser,
+                    "Email successfully verified"
+                )
+            )
+    } else {
+        throw new APIError(400, "Problem in verification");
+    }
+});
 
 // const getChat = asyncHandler(async (req, res) => {})
-// const verifyEmail = asyncHandler(async (req, res) => {})
 // const getPasskey = asyncHandler(async (req, res) => {})
 // const generateNewPasskey = asyncHandler(async (req, res) => {})
 
@@ -431,9 +533,10 @@ export {
     updateUserDetails,
     updateUserPassword,
     getAllLinkedRequests,
-    getPendingRequestsByAdmin
+    getPendingRequestsByAdmin,
+    sendCode,
+    verifyEmail,
     // getChat,
-    // verifyEmail,
     // getPasskey,
     // generateNewPasskey,
 }

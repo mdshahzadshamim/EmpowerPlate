@@ -22,6 +22,8 @@
    - updateUserPassword
    - getAllLinkedRequests
    - getPendingRequestsByAdmin
+   - sendCode - _Vefification Code_
+   - verifyEmail - _VerifyOTP_
 - Create & Modify Request
    - createRequest
    - updateRequest - _Modify, Admin_

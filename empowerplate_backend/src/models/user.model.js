@@ -70,6 +70,18 @@ const userSchema = new Schema({
         type: [],
         default: undefined
     },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    otp: {
+        code: {
+            type: String,
+        },
+        expiration: {
+            type: Date
+        }
+    },
     requests: {
         type: [
             {

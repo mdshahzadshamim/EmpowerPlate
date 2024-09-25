@@ -9,9 +9,10 @@ import {
     updateUserDetails,
     updateUserPassword,
     getAllLinkedRequests,
-    getPendingRequestsByAdmin
+    getPendingRequestsByAdmin,
+    sendCode,
+    verifyEmail,
     // getChat,
-    // verifyEmail,
     // getPasskey,
     // generateNewPasskey,
 } from "../controllers/user.controller.js";
@@ -27,9 +28,10 @@ router.route("/update-details").patch(verifyJWT, updateUserDetails);
 router.route("/update-password").post(verifyJWT, updateUserPassword);
 router.route("/linked-requests").get(verifyJWT, getAllLinkedRequests);
 router.route("/pending-requests").get(verifyJWT, getPendingRequestsByAdmin);
-// router.route("/get-chat").post(verifyJWT, getChat)
-// router.route("/verify-email").post(verifyEmail)
-// router.route("/get-passkey").post(getPasskey)
-// router.route("/generate-passkey").post(generateNewPasskey)
+router.route("/sendCode").post(verifyJWT,sendCode);
+router.route("/verifyEmail").post(verifyJWT,verifyEmail);
+// router.route("/get-chat").post(verifyJWT, getChat);
+// router.route("/get-passkey").post(getPasskey);
+// router.route("/generate-passkey").post(generateNewPasskey);
 
 export default router;
