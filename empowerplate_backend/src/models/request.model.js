@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { config } from "../config/config.js";
-import { grainOrFlourTypes } from "../../constants.js";
+import { grainOrFlourTypes } from "../../constantsConfig.js";
 
 const statusHistorySchema = new Schema({
     status: {
@@ -11,7 +11,8 @@ const statusHistorySchema = new Schema({
             "REJECTED",
             "ONTHEWAY",
             "HALFWAY",
-            "FULFILLED"
+            "FULFILLED",
+            "CANCELLED"
         ],
         required: true
     }

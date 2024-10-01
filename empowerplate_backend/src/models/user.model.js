@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { APIError } from "../utils/APIError.js";
 import { config } from "../config/config.js";
+import { regEx } from "../../constantsConfig.js";
 
 const userSchema = new Schema({
     username: {
@@ -11,7 +12,13 @@ const userSchema = new Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        index: true
+        index: true,
+        validate: {
+            validator: function (v) {
+                return regEx.username.test(v);
+            },
+            message: props => `${props.value} is not a valid username!`
+        }
     },
     email: {
         type: String,
@@ -19,9 +26,10 @@ const userSchema = new Schema({
         required: true,
         lowercase: true,
         trim: true,
+        index: true,
         validate: {
             validator: function (v) {
-                return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v);
+                return regEx.email.test(v);
             },
             message: props => `${props.value} is not a valid email!`
         },
@@ -32,9 +40,10 @@ const userSchema = new Schema({
         required: true,
         unique: true,
         trim: true,
+        index: true,
         validate: {
             validator: function (v) {
-                return /^(\+91[\-\s]?)?[6-9]\d{9}$|^(\+91[\-\s]?)?0\d{2,4}[\-\s]?\d{6,8}$/.test(v);
+                return regEx.phone.test(v);
             },
             message: props => `${props.value} is not a valid Indian phone number!`
         }
@@ -43,11 +52,25 @@ const userSchema = new Schema({
         type: String,
         required: true,
         trim: true,
-        index: true
+        index: true,
+        validate: {
+            validator: function (v) {
+                return regEx.name.test(v);
+            },
+            message: props => `${props.value} is not a valid name!`
+        }
     },
     password: {
         type: String,
-        required: [true, "Password is required"]
+        required: [true, "Password is required"],
+        minlength: 8,
+        maxlength: 20,
+        validate: {
+            validator: function (v) {
+                return regEx.password.test(v);
+            },
+            message: props => `${props.value} is not a valid password!`
+        }
     },
     userType: {
         type: String,
@@ -92,8 +115,7 @@ const userSchema = new Schema({
         default: undefined
     },
     refreshToken: {
-        type: String,
-        index: true
+        type: String
     },
 }, { timestamps: true });
 

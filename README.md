@@ -7,7 +7,8 @@
 - Databases
    - MongoDB, with mongoose, for user & request management
    - PostgreSQL, with pg, for dedicated food-bank management
-- Frontend: React.js, _under development, with geo-location based features using Google Maps API_
+- Frontend: React.js, _under development_
+- State Management: Redux, _for React environment_
 - Authentication: JWT for Authentication
 - Password hashing: Bcrypt
 

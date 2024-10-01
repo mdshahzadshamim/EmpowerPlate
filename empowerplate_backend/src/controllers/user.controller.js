@@ -65,7 +65,7 @@ const generateOTP = () => {
 const registerUser = asyncHandler(async (req, res) => {
     const { username, email, phone, name, password, userType, city } = req.body;
 
-    if ([username, phone, email, name, password, userType, city].some((field) => field?.trim() === ""))
+    if ([username, email, phone, name, password, userType, city].some((field) => field?.trim() === ""))
         throw new APIError(401, "All fields are required");
 
     const existingUser = await User.findOne({ $or: [{ username }, { email }, { phone }] });
@@ -157,22 +157,8 @@ const logInUser = asyncHandler(async (req, res) => {
 })
 
 const logOutUser = asyncHandler(async (req, res) => {
-    // await User.findByIdAndUpdate(
-    //     req.user._id,
-    //     {
-    //         $unset: {
-    //             refreshToken: 1
-    //         }
-    //     },
-    //     {
-    //         new: true
-    //     }
-    // );
-
-    await User.findOneAndUpdate(
-        {
-            refreshToken: req.cookies.refreshToken
-        },
+    await User.findByIdAndUpdate(
+        req.user._id,
         {
             $unset: {
                 refreshToken: 1
@@ -181,14 +167,28 @@ const logOutUser = asyncHandler(async (req, res) => {
         {
             new: true
         }
-    )
+    );
+
+    // await User.findOneAndUpdate(
+    //     {
+    //         refreshToken: req.cookies.refreshToken
+    //     },
+    //     {
+    //         $unset: {
+    //             refreshToken: 1
+    //         }
+    //     },
+    //     {
+    //         new: true
+    //     }
+    // )
 
     console.log("User has been logged out");
 
     return res
         .status(200)
-        .clearCookie("accessToken", options)
-        .clearCookie("refreshToken", options)
+        .clearCookie("accessToken")
+        .clearCookie("refreshToken")
         .json(
             new APIResponse(
                 200,
@@ -435,7 +435,7 @@ const sendCode = asyncHandler(async (req, res) => {
     const { user } = req;
     const code = generateOTP();
 
-    console.log(user);
+    // console.log(user);
 
     const sendie = user.email;
     const emailSubject = "Email Verification";

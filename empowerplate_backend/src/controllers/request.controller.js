@@ -254,7 +254,8 @@ const createRequest = asyncHandler(async (req, res) => {
         throw new APIError(405, "User not authorized");
 
     const requester = req.user._id;
-    const { type, foodType, city } = req.body;
+    const city = req.user.city;
+    const { type, foodType } = req.body;
     const currentStatus = "PENDING";
     const statusHistory = [];
 
@@ -366,7 +367,7 @@ const respondToRequest = asyncHandler(async (req, res) => {
                 .status(250)
                 .json(
                     new APIResponse(
-                        250,
+                        405,
                         {},
                         "Enough or appropriate food is not available"
                     )
@@ -569,10 +570,11 @@ const updateRequest = asyncHandler(async (req, res) => {
 
 const cancelRequest = asyncHandler(async (req, res) => {
     const { request } = req;
-    const { reason, status } = req.body;
+    const { reason } = req.body;
+    const status = "CANCELLED";
 
-    if (!status === "CANCELLED")
-        throw new APIError(400, `Invalid update specification: ${status}`);
+    // if (!status === "CANCELLED")
+    //     throw new APIError(400, `Invalid update specification: ${status}`);
     if(!reason)
         reason = "Cancelled without any reason";
 
@@ -603,7 +605,7 @@ const cancelRequest = asyncHandler(async (req, res) => {
     if (!cancelledRequest)
         throw new APIError(400, "Request couldn't cancelled: Database update error");
 
-    let transaction = 0;
+    let transaction = 0; // For adding back the rerturned food into database
 
     if (request.type === "RECEIVE") {
         if (request.foodType === "RAW") {
