@@ -1,4 +1,4 @@
-import { grainOrFlourTypes, regEx } from "../constants.mjs";
+import { grainOrFlourTypes, regEx, cities } from "../constants.mjs";
 
 
-export { grainOrFlourTypes, regEx };
+export { grainOrFlourTypes, regEx, cities };

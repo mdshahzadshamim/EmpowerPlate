@@ -63,10 +63,13 @@ const generateOTP = () => {
 }
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { username, email, phone, name, password, userType, city } = req.body;
+    const { username, email, phone, name, password, userType, city, passkey } = req.body;
 
     if ([username, email, phone, name, password, userType, city].some((field) => field?.trim() === ""))
         throw new APIError(401, "All fields are required");
+
+    if ((userType === "ADMIN" || userType === "VOLUNTEER") && (passkey !== config.adminPasskey))
+        throw new APIError(400, "Incorrect or Invalid passkey");
 
     const existingUser = await User.findOne({ $or: [{ username }, { email }, { phone }] });
 
@@ -92,12 +95,14 @@ const registerUser = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .clearCookie("accessToken", options)
-        .clearCookie("refreshToken", options)
+        .clearCookie("accessToken")
+        .clearCookie("refreshToken")
         .json(
             new APIResponse(
                 200,
-                createdUser,
+                {
+                    user: createdUser
+                },
                 "Registered Successfully"
             )
         )
@@ -252,31 +257,69 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 })
 
 const updateUserDetails = asyncHandler(async (req, res) => {
-    const { username, name, city } = req.body;
+    const userId = req.user._id;
 
-    if (!(username || name || city))
+    // Fetch the current user data
+    const currentUser = await User.findById(userId).select("username email phone name city");
+    if (!currentUser) {
+        throw new APIError(404, "User not found");
+    }
+
+    const updateFields = {};
+    const { username, email, phone, name, city } = req.body;
+
+    if (!(username || email || phone || name || city))
         throw new APIError(401, "Atleast one field is required");
 
+    // Prepare the new values to update only if they are non-empty & different
+    if (username && username !== currentUser.username) updateFields.username = username;
+    if (email && email !== currentUser.email) updateFields.email = email;
+    if (phone && phone !== currentUser.phone) updateFields.phone = phone;
+    if (name && name !== currentUser.name) updateFields.name = name;
+    if (city && city !== currentUser.city) updateFields.city = city;
+
+    // Function to check for duplicate values for unique fields, excluding current user's ID
+    const checkForDuplicates = async (fields) => {
+        const duplicateCheck = await User.findOne({
+            $or: [
+                { username: fields.username, _id: { $ne: userId } },
+                { email: fields.email, _id: { $ne: userId } },
+                { phone: fields.phone, _id: { $ne: userId } },
+            ]
+        });
+
+        return !!duplicateCheck; // Returns true if duplicates are found
+    };
+
+    // Check for duplicates only if there are fields to update
+    const hasDuplicates = Object.keys(updateFields).length > 0 && await checkForDuplicates(updateFields);
+
+    if (hasDuplicates) {
+        throw new APIError(400, "Duplicate values found. Update failed.");
+    }
+
+    // Proceed with update if no duplicates
     const user = await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set: {
-                username, name, city
-            }
+            $set: updateFields
         },
         {
             new: true
         }
-    ).select("-password -refreshToken")
+    ).select("-password -refreshToken");
 
-    console.log("User details");
+
+    console.log("User details updated for ", user.username);
 
     return res
         .status(200)
         .json(
             new APIResponse(
                 200,
-                user,
+                {
+                    user
+                },
                 "User details updated"
             )
         )
@@ -441,6 +484,7 @@ const sendCode = asyncHandler(async (req, res) => {
     const emailSubject = "Email Verification";
     const emailContent = `Your One Time Password is ${code}\n Valid for 10 minutes`;
 
+    // console.log({ sendie, emailSubject, emailContent });
     const emailSent = await sendEmail({ sendie, emailSubject, emailContent });
 
     if (emailSent) {
@@ -485,7 +529,9 @@ const verifyEmail = asyncHandler(async (req, res) => {
             .json(
                 new APIResponse(
                     200,
-                    unverifiedUser,
+                    {
+                        user: unverifiedUser
+                    },
                     "OTP Expired"
                 )
             )
@@ -511,7 +557,9 @@ const verifyEmail = asyncHandler(async (req, res) => {
             .json(
                 new APIResponse(
                     200,
-                    verifiedUser,
+                    {
+                        user: verifiedUser
+                    },
                     "Email successfully verified"
                 )
             )

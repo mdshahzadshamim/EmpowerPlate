@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { logInUser } from "../services/authService";
-import { login } from "../features/authSlice";
+import { logInUser } from "../../services/authService";
+import { login } from "../../features/authSlice";
 
-const LogInPage = () => {
-  const [identifierType, setIdentifierType] = useState("username"); // Default to username
+const LogInForm = () => {
+  const [identifierType, setIdentifierType] = useState("username");
   const [identifierValue, setIdentifierValue] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
@@ -62,10 +62,10 @@ const LogInPage = () => {
         type="submit"
         className="w-full bg-blue-500 text-white font-semibold py-3 rounded-md shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 transition duration-300 ease-in-out"
       >
-        Login
+        Log In
       </button>
     </form>
   );
 };
 
-export default LogInPage;
+export default LogInForm;

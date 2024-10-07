@@ -1,11 +1,11 @@
 import axios from "axios";
 import config from "../config/config";
 
-export const registerUser = async (username, email, phone, name, password, userType, city) => {
+export const registerUser = async (username, email, phone, name, password, userType, city, passkey) => {
     try {
         const response = await axios.post(
             `${config.server}/users/register`,
-            { username, email, phone, name, password, userType, city },
+            { username, email, phone, name, password, userType, city, passkey },
             { withCredentials: true }
         );
 
@@ -35,11 +35,11 @@ export const getCurrentUser = async () => {
     }
 };
 
-export const updateUserDetails = async (username, name, city) => {
+export const updateUserDetails = async (username, email, phone, name, city) => {
     try {
         const response = await axios.patch(
             `${config.server}/users/update-details`,
-            { username, name, city },
+            { username, email, phone, name, city },
             { withCredentials: true }
         );
 

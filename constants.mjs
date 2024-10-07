@@ -1,5 +1,5 @@
 export const regEx = {
-  username: /^(?=[a-z0-9_]*[0-9].*[0-9]?)(?!.*[0-9].*[0-9]{2})([a-z0-9_]{3,30})$/,
+  username: /^(?=[a-z_]*\d{0,2}[a-z_]*$)[a-z0-9_]{3,30}$/,
   email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
   phone: /^(\+91[\-\s]?)?[6-9]\d{9}$|^(\+91[\-\s]?)?0\d{2,4}[\-\s]?\d{6,8}$/,
   password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=-])[A-Za-z\d!@#$%^&*()_+=-]{8,20}$/,
@@ -62,4 +62,8 @@ export const grainOrFlourTypes = [
   "SAGO",            // Sago pearls (Sabudana)
 
   "OTHER"            // For any other types not listed
+];
+
+export const cities = [
+  "MOHANIA",
 ];

@@ -1,16 +1,24 @@
 import React from "react";
-import { useDispatch } from "react-redux";
-import { logOutUser } from "../services/authService";
-import { logout } from "../features/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { logOutUser } from "../../services/authService";
+import { logout } from "../../features/authSlice";
 
-const LogOutButton = () => {
+const LogoutButton = () => {
   const dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.auth.user);
+
+  if (!currentUser) {
+    console.error("Please login,", "No current user found");
+    return;
+  }
 
   const handleLogout = async () => {
     try {
       const logoutData = await logOutUser();
-      if (logoutData) dispatch(logout());
-      console.log("User logged out successfully!");
+      if (logoutData) {
+        dispatch(logout());
+        console.log("User logged out successfully!");
+      }
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -26,4 +34,4 @@ const LogOutButton = () => {
   );
 };
 
-export default LogOutButton;
+export default LogoutButton;

@@ -13,9 +13,12 @@ const sendEmail = async ({ sendie, emailSubject, emailContent }) => {
     );
     oAuth2Client.setCredentials({ refresh_token: config.googleOAuth2Ref });
 
+    const accessToken = await oAuth2Client.getAccessToken();
+    
+    if(!accessToken)
+        throw new APIError(400, "Failed to retrieve access token");
+    
     try {
-        const accessToken = await oAuth2Client.getAccessToken();
-
         const transport = nodemailer.createTransport({
             service: 'gmail',
             auth: {

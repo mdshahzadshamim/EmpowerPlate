@@ -47,7 +47,8 @@ const config = {
     azureRefreshToken: process.env.AZURE_REFRESH_TOKEN,
     azureAccessTokenExpiry: process.env.AZURE_ACCESS_TOKEN_EXPIRY,
 
-    currentCity: process.env.CURRENT_CITY
+    currentCity: process.env.CURRENT_CITY,
+    adminPasskey: process.env.ADMIN_PASSKEY,
 };
 
 
