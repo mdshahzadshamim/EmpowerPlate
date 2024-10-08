@@ -356,6 +356,7 @@ const updateUserPassword = asyncHandler(async (req, res) => {
 })
 
 const getAllLinkedRequests = asyncHandler(async (req, res) => {
+    console.log("Trying to stream all linked requests");
     let cursor;
 
     if (req.user.userType === "ADMIN") {

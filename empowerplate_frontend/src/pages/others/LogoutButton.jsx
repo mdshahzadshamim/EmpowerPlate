@@ -2,6 +2,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logOutUser } from "../../services/authService";
 import { logout } from "../../features/authSlice";
+import { setRequests } from "../../features/requestSlice";
 
 const LogoutButton = () => {
   const dispatch = useDispatch();
@@ -17,6 +18,7 @@ const LogoutButton = () => {
       const logoutData = await logOutUser();
       if (logoutData) {
         dispatch(logout());
+        dispatch(setRequests([]));
         console.log("User logged out successfully!");
       }
     } catch (error) {

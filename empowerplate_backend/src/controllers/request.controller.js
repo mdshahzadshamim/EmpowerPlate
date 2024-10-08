@@ -250,6 +250,7 @@ const checkCookedFoodAvailability = async (cookedFood) => {
 
 const createRequest = asyncHandler(async (req, res) => {
     // if (!((req.user.userType === "RECIPIENT") || (req.user.userType === "DONOR")))
+    // console.log(req.body);
     if (req.user.userType !== "END_USER")
         throw new APIError(405, "User not authorized");
 
@@ -266,7 +267,10 @@ const createRequest = asyncHandler(async (req, res) => {
     if (foodType === "RAW") {
         const rawFood = [];
 
-        const food = JSON.parse(req.body.rawFood);
+        let food = req.body.rawFood;
+        if (food === undefined) {
+            food = JSON.parse(req.body.rawFood);
+        }
 
         food.forEach((grain) => {
             rawFood.push({
@@ -288,7 +292,10 @@ const createRequest = asyncHandler(async (req, res) => {
     } else if (foodType === "COOKED") {
         const cookedFood = [];
 
-        const food = JSON.parse(req.body.cookedFood);
+        let food = req.body.cookedFood;
+        if (food === undefined) {
+            food = JSON.parse(req.body.cookedFood);
+        }
 
         food.forEach((people) => {
             cookedFood.push({
@@ -321,7 +328,9 @@ const createRequest = asyncHandler(async (req, res) => {
         .json(
             new APIResponse(
                 200,
-                createdRequest,
+                {
+                    request: createdRequest
+                },
                 "Request created successfully"
             )
         )
@@ -408,7 +417,9 @@ const respondToRequest = asyncHandler(async (req, res) => {
             .json(
                 new APIResponse(
                     200,
-                    request,
+                    {
+                        request
+                    },
                     "Request successfully responded"
                 )
             )
@@ -474,7 +485,9 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
             .json(
                 new APIResponse(
                     200,
-                    request,
+                    {
+                        request
+                    },
                     "Request status updated successfully"
                 )
             )
@@ -522,7 +535,9 @@ const updateRequest = asyncHandler(async (req, res) => {
             .json(
                 new APIResponse(
                     200,
-                    updatedRequest,
+                    {
+                        request: updatedRequest
+                    },
                     "Request updated: Raw Food"
                 )
             )
@@ -560,7 +575,9 @@ const updateRequest = asyncHandler(async (req, res) => {
             .json(
                 new APIResponse(
                     200,
-                    updatedRequest,
+                    {
+                        request: updatedRequest
+                    },
                     "Request updated: Cooked Food"
                 )
             )
@@ -575,7 +592,7 @@ const cancelRequest = asyncHandler(async (req, res) => {
 
     // if (!status === "CANCELLED")
     //     throw new APIError(400, `Invalid update specification: ${status}`);
-    if(!reason)
+    if (!reason)
         reason = "Cancelled without any reason";
 
     if (req.user.userType === "VOLUNTEER")
@@ -618,7 +635,7 @@ const cancelRequest = asyncHandler(async (req, res) => {
         }
     }
 
-    if(!transaction)
+    if (!transaction)
         throw new APIError(400, "Database couldn't be updated");
 
     console.log("Request cancelled successfully");
@@ -628,7 +645,9 @@ const cancelRequest = asyncHandler(async (req, res) => {
         .json(
             new APIResponse(
                 200,
-                cancelledRequest,
+                {
+                    request: cancelledRequest
+                },
                 "Request cancelled successfully"
             )
         )
@@ -644,7 +663,9 @@ const getRequest = asyncHandler(async (req, res) => {
         .json(
             new APIResponse(
                 200,
-                request,
+                {
+                    request
+                },
                 "Request details returned"
             )
         )
@@ -677,7 +698,9 @@ const confirmFulfillmentByUser = asyncHandler(async (req, res) => {
             .json(
                 new APIResponse(
                     200,
-                    request,
+                    {
+                        request
+                    },
                     "Request successfully updated"
                 )
             )

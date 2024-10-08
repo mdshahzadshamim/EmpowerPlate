@@ -33,7 +33,7 @@ const cookedFoodSchema = new Schema({
     count: {
         type: Number,
         min: 1,
-        max: 5,
+        max: 1000,
         validate: {
             validator: Number.isInteger,
             message: '{VALUE} is not allowed, should be an INT: 1 to 5'
@@ -50,6 +50,8 @@ const rawFoodSchema = new Schema({
     },
     amountInKg: {
         type: Number,
+        min: 1,
+        max: 1000,
         required: true
     }
 })

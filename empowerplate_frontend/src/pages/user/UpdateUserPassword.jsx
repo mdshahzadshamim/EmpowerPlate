@@ -1,12 +1,18 @@
 import React, { useRef, useState } from 'react'
 import PasswordField from '../../components/common/PasswordField';
 import { updateUserPassword } from '../../services/userService';
+import { useSelector } from 'react-redux';
 
 function UpdateUserPassword() {
+  const currentUser = useSelector((state) => state.auth.user);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  
+
+  if (!currentUser) {
+    console.error("Please login,", "No current user found");
+    return;
+  }  
 
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();

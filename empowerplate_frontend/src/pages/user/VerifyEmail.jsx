@@ -7,14 +7,14 @@ import PasswordField from '../../components/common/PasswordField';
 function VerifyEmail() {
   const currentUser = useSelector((state) => state.auth.user);
 
+  const [code, setCode] = useState("");
+
+  const dispatch = useDispatch();
+
   if (!currentUser) {
     console.error("Please login,", "No current user found");
     return;
   }
-
-  const dispatch = useDispatch();
-
-  const [code, setCode] = useState("");
 
   const handleVerification = async (e) => {
     e.preventDefault();

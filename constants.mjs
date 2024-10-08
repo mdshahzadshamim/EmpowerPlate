@@ -61,7 +61,7 @@ export const grainOrFlourTypes = [
   "SOOJI",           // Semolina
   "SAGO",            // Sago pearls (Sabudana)
 
-  "OTHER"            // For any other types not listed
+  // "OTHER"            // For any other types not listed
 ];
 
 export const cities = [

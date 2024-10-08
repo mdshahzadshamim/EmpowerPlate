@@ -1,13 +1,20 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logInUser } from "../../services/authService";
 import { login } from "../../features/authSlice";
 
 const LogInForm = () => {
+  const currentUser = useSelector((state) => state.auth.user);
+
   const [identifierType, setIdentifierType] = useState("username");
   const [identifierValue, setIdentifierValue] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
+
+  if (currentUser) {
+    console.error("Please logout first, ", "to login with current credentials");
+    return;
+  }
 
   const handleLogin = async (e) => {
     e.preventDefault();

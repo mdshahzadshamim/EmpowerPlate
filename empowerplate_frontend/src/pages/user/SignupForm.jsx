@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { registerUser } from "../../services/userService";
 import { cities } from '../../../constantsConfig';
+import { useSelector } from 'react-redux';
 
 function SignupForm() {
+  const currentUser = useSelector((state) => state.auth.user);
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -14,6 +17,11 @@ function SignupForm() {
   const [passkey, setPasskey] = useState("");
 
   const userTypes = ["ADMIN", "VOLUNTEER", "END_USER"];
+
+  if (currentUser) {
+    console.error("Please logout first, ", "to signup with current credentials");
+    return;
+  }
 
   const handleSignup = async (e) => {
     e.preventDefault();

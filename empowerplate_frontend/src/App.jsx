@@ -6,19 +6,25 @@ import UpdateUserDetails from "./pages/user/UpdateUserDetails";
 import UpdateUserPassword from "./pages/user/UpdateUserPassword";
 import SendCodeButton from "./pages/others/SendCodeButton";
 import VerifyEmail from "./pages/user/VerifyEmail";
+import CreateRequest from "./pages/request/CreateRequest";
+import LinkedRequests from "./pages/user/LinkedRequests";
 
 
 function App() {
 
   return (
     <>
+    {/* <RequestForm /> */}
+    
     <LogOutButton />
-    <SendCodeButton />
+    <LinkedRequests />
     <LogInForm />
+    {/* <SendCodeButton />
     <SignupForm />
     <UpdateUserDetails />
     <UpdateUserPassword/>
     <VerifyEmail />
+    <CreateRequest /> */}
     </>
   )
 }

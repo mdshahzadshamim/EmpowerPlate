@@ -1,6 +1,6 @@
 import React from 'react'
 
-function VerifyEmailButton() {
+function PendingRequests() {
   return (
     <div>
       
@@ -8,4 +8,4 @@ function VerifyEmailButton() {
   )
 }
 
-export default VerifyEmailButton
+export default PendingRequests

@@ -8,17 +8,18 @@ function UpdateUserDetails() {
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.auth.user);
 
-  if (!currentUser) {
-    console.error("Please login,", "No current user found");
-    return;
-  }
-
+  
   const [username, setUsername] = useState(currentUser.username);
   const [email, setEmail] = useState(currentUser.email);
   const [phone, setPhone] = useState(currentUser.phone);
   const [name, setName] = useState(currentUser.name);
   const [city, setCity] = useState(currentUser.city);
-
+  
+  if (!currentUser) {
+    console.error("Please login,", "No current user found");
+    return;
+  }
+  
   const handleUpdate = async (e) => {
     e.preventDefault();
 
