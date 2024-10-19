@@ -1,5 +1,5 @@
 import React from 'react';
-import email from "../../config/config";
+import config from "../../config/config";
 
 function Footer() {
   return (
@@ -18,7 +18,7 @@ function Footer() {
           <div>
             <h2 className="text-xl font-bold mb-2">Contact</h2>
             <p className="mb-2">For more details, reach out to us:</p>
-            <p className="font-semibold">Email: <a href={`mailto: ${email}`} className="text-blue-400 hover:text-blue-300">{email}</a></p>
+            <p className="font-semibold">Email: <a href={`mailto: ${config.email}`} className="text-blue-400 hover:text-blue-300">{config.email}</a></p>
           </div>
         </div>
       </div>
