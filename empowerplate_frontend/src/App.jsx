@@ -1,32 +1,17 @@
-import RequestForm from "./pages/test/Test"
-import SignupForm from "./pages/user/SignupForm";
-import LogInForm from "./pages/auth/LoginForm";
-import LogOutButton from "./pages/others/LogoutButton"
-import UpdateUserDetails from "./pages/user/UpdateUserDetails";
-import UpdateUserPassword from "./pages/user/UpdateUserPassword";
-import SendCodeButton from "./pages/others/SendCodeButton";
-import VerifyEmail from "./pages/user/VerifyEmail";
-import CreateRequest from "./pages/request/CreateRequest";
-import LinkedRequests from "./pages/user/LinkedRequests";
-
+import Header from "./components/layout/Header";
+import Footer from "./components/layout/Footer";
+import { Outlet } from "react-router-dom";
 
 function App() {
-
   return (
-    <>
-    {/* <RequestForm /> */}
-    
-    <LogOutButton />
-    <LinkedRequests />
-    <LogInForm />
-    {/* <SendCodeButton />
-    <SignupForm />
-    <UpdateUserDetails />
-    <UpdateUserPassword/>
-    <VerifyEmail />
-    <CreateRequest /> */}
-    </>
-  )
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
-export default App
+export default App;

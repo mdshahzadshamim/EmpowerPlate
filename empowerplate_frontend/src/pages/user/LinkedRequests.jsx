@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getAllLinkedRequests } from '../../services/userService'
 import { setRequests as sendRequests } from "../../features/requestSlice"
 import Request from '../../components/common/Request'
+import RequestPropHeadings from "../../components/common/RequestPropHeadings"
+
 
 function LinkedRequests() {
     const currentUser = useSelector((state) => state.auth.user);
@@ -11,22 +13,6 @@ function LinkedRequests() {
     const dispatch = useDispatch();
 
     const requestsFromState = useSelector((state) => state.request.requests);
-
-    useEffect(() => {
-        if (requestsFromState) {
-            setRequests(requestsFromState);
-        } else if(!requestsFromState) {
-            setRequests([]);
-        }
-        if(!currentUser) {
-            setRequests([]);
-        }
-    }, [currentUser, requestsFromState, setRequests])
-
-    if (!currentUser) {
-        console.error("Please login,", "No current user found");
-        return;
-    }
 
     const fetchRequests = async () => {
         try {
@@ -42,14 +28,27 @@ function LinkedRequests() {
         }
     }
 
+    useEffect(() => {
+        if (!currentUser) {
+            setRequests([]);
+        } else if (currentUser) {
+            // fetchRequests();
+            if (!requestsFromState || requestsFromState.length === 0) {
+                fetchRequests();
+            } else if (requestsFromState) {
+                setRequests(requestsFromState);
+            }
+        }
+    }, [currentUser, requestsFromState, setRequests]);
+
+    if (!currentUser) {
+        console.error("Please login,", "No current user found");
+        return null;
+    }
+
     return (
         <div>
-            <button onClick={fetchRequests}
-                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mb-4"
-            >
-                Linked Requests
-            </button>
-
+            <RequestPropHeadings />
             {requests && (
                 <>
                     {requests.map((request) => <Request key={request._id} request={request} />)}
@@ -59,4 +58,4 @@ function LinkedRequests() {
     )
 }
 
-export default LinkedRequests
+export default LinkedRequests;

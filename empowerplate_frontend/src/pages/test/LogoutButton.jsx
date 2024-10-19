@@ -3,8 +3,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { logOutUser } from "../../services/authService";
 import { logout } from "../../features/authSlice";
 import { setRequests } from "../../features/requestSlice";
+import { useNavigate } from 'react-router-dom';
+
 
 const LogoutButton = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.auth.user);
 
@@ -19,6 +22,7 @@ const LogoutButton = () => {
       if (logoutData) {
         dispatch(logout());
         dispatch(setRequests([]));
+        navigate("/");
         console.log("User logged out successfully!");
       }
     } catch (error) {

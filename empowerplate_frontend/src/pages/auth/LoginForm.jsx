@@ -2,13 +2,17 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logInUser } from "../../services/authService";
 import { login } from "../../features/authSlice";
+import { Link, useNavigate } from 'react-router-dom';
+
 
 const LogInForm = () => {
+  const navigate = useNavigate();
+  const [message, setMessage] = useState(""); 
   const currentUser = useSelector((state) => state.auth.user);
 
   const [identifierType, setIdentifierType] = useState("username");
   const [identifierValue, setIdentifierValue] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("12345678");
   const dispatch = useDispatch();
 
   if (currentUser) {
@@ -25,9 +29,11 @@ const LogInForm = () => {
       if (userData) {
         const user = userData.data.user;
         dispatch(login(user));
+        navigate("/");
         console.log("Login successful:", user);
       }
     } catch (error) {
+      setMessage("Invalid Details");
       console.error("Login failed:", error.message);
     }
   };
@@ -71,6 +77,14 @@ const LogInForm = () => {
       >
         Log In
       </button>
+      <span id="message">{message}</span>
+      <p className='mt-2 text-center text-base text-black/60'>
+        Don&apos;t have any account?&nbsp;
+        <Link to="/users/register"
+          className='font-medium text-primary transition-all duration-200 hover:underline'>
+          Sign Up
+        </Link>
+      </p>
     </form>
   );
 };

@@ -3,23 +3,25 @@ import { useSelector, useDispatch } from 'react-redux';
 import { cities } from '../../../constantsConfig';
 import { updateUserDetails } from '../../services/userService';
 import { login } from "../../features/authSlice";
+import { useNavigate } from 'react-router-dom';
 
 function UpdateUserDetails() {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.auth.user);
 
-  
+
   const [username, setUsername] = useState(currentUser.username);
   const [email, setEmail] = useState(currentUser.email);
   const [phone, setPhone] = useState(currentUser.phone);
   const [name, setName] = useState(currentUser.name);
   const [city, setCity] = useState(currentUser.city);
-  
+
   if (!currentUser) {
     console.error("Please login,", "No current user found");
     return;
   }
-  
+
   const handleUpdate = async (e) => {
     e.preventDefault();
 
@@ -28,6 +30,7 @@ function UpdateUserDetails() {
       if (userData) {
         const user = userData.data.user;
         dispatch(login(user));
+        navigate("/");
         console.log("Update successful ", user);
       }
     } catch (error) {

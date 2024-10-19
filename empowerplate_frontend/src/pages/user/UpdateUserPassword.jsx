@@ -2,8 +2,11 @@ import React, { useRef, useState } from 'react'
 import PasswordField from '../../components/common/PasswordField';
 import { updateUserPassword } from '../../services/userService';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+
 
 function UpdateUserPassword() {
+  const navigate = useNavigate();
   const currentUser = useSelector((state) => state.auth.user);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -12,15 +15,16 @@ function UpdateUserPassword() {
   if (!currentUser) {
     console.error("Please login,", "No current user found");
     return;
-  }  
+  }
 
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
 
     try {
       const userData = await updateUserPassword(oldPassword, newPassword, confirmNewPassword);
-      if(userData) {
+      if (userData) {
         console.log("Password updated");
+        navigate("/");
       }
     } catch (error) {
       console.error("Password wasn't updated ", error.message)

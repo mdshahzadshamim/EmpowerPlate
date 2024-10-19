@@ -115,23 +115,54 @@ export const getAllLinkedRequests = async () => {
     }
 };
 
+// export const getPendingRequestsByAdmin = async () => {
+//     try {
+//         const response = await axios.get(
+//             `${config.server}/users/pending-requests`,
+//             {},
+//             { withCredentials: true }
+//         );
+
+//         if (response.data.success)
+//             return response.data;
+//         else
+//             throw new Error(data.message);
+//     } catch (error) {
+//         throw error.response?.data?.message || error.message;
+//     }
+// };
 
 export const getPendingRequestsByAdmin = async () => {
     try {
-        const response = await axios.get(
-            `${config.server}/users/pending-requests`,
-            {},
-            { withCredentials: true }
-        );
+        const response = await fetch(`${config.server}/users/pending-requests`, {
+            credentials: 'include', // This ensures cookies are sent
+        });
 
-        if (response.data.success)
-            return response.data;
-        else
-            throw new Error(data.message);
+        if (!response.ok) {
+            throw new Error("Failed to fetch pending requests");
+        }
+
+        // Process the stream of JSON data
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let result = "";
+        let done = false;
+
+        while (!done) {
+            const { value, done: readerDone } = await reader.read();
+            done = readerDone;
+            result += decoder.decode(value, { stream: !done });
+        }
+
+        // Parse the accumulated result into a JSON array
+        const requests = JSON.parse(result);
+        return requests;
     } catch (error) {
-        throw error.response?.data?.message || error.message;
+        throw error.message;
     }
 };
+
+
 
 export const sendCode = async () => {
     try {

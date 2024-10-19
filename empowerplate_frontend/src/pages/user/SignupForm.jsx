@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { registerUser } from "../../services/userService";
 import { cities } from '../../../constantsConfig';
 import { useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+
+
 
 function SignupForm() {
+  const navigate = useNavigate();
   const currentUser = useSelector((state) => state.auth.user);
 
   const [username, setUsername] = useState("");
@@ -32,6 +36,7 @@ function SignupForm() {
       const userData = await registerUser(username, email, phone, name, password, userType, city, passkey);
       if (userData) {
         const user = userData.data.user;
+        navigate("/users/login");
         console.log("Signup successful:", user);
       }
     } catch (error) {
@@ -132,6 +137,13 @@ function SignupForm() {
       >
         Sign Up
       </button>
+      <p className='mt-2 text-center text-base text-black/60'>
+        Already havean account?&nbsp;
+        <Link to="/users/login"
+          className='font-medium text-primary transition-all duration-200 hover:underline'>
+          Log In
+        </Link>
+      </p>
     </form>
   );
 }

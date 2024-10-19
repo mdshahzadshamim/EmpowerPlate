@@ -3,8 +3,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import { login } from '../../features/authSlice'
 import { verifyEmail } from '../../services/userService';
 import PasswordField from '../../components/common/PasswordField';
+import { useNavigate } from 'react-router-dom';
 
 function VerifyEmail() {
+  const navigate = useNavigate();
   const currentUser = useSelector((state) => state.auth.user);
 
   const [code, setCode] = useState("");
@@ -25,6 +27,7 @@ function VerifyEmail() {
         const user = userData.data.user;
         dispatch(login(user));
         console.log("User verified ", user);
+        navigate("/");
       }
     } catch (error) {
       console.error("Invalid OTP", error.message);

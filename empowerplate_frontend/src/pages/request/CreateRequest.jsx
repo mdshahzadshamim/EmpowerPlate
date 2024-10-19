@@ -1,27 +1,49 @@
 import React, { useState } from 'react'
 import { grainOrFlourTypes } from '../../../../constants.mjs';
 import { createRequest } from '../../services/requestService';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { getAllLinkedRequests } from '../../services/userService';
+import { setRequests } from '../../features/requestSlice';
+
 
 
 function CreateRequest() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const currentUser = useSelector((state) => state.auth.user);
 
   const [type, setType] = useState("DONATE");
   const [foodType, setFoodType] = useState("RAW");
   const [isRawFood, setIsRawFood] = useState(true);
-  const [food, setFood] = useState([]);
+  // const [food, setFood] = useState([]); // Not getting updated
   const [grainOrFlourType0, setGrainOrFlourType0] = useState(grainOrFlourTypes[0]);
   const [grainOrFlourType1, setGrainOrFlourType1] = useState(grainOrFlourTypes[22]);
-  const [amountInKg0, setAmountInKg0] = useState();
-  const [amountInKg1, setAmountInKg1] = useState();
-  const [count0, setCount0] = useState();
-  const [count1, setCount1] = useState();
+  const [amountInKg0, setAmountInKg0] = useState(0);
+  const [amountInKg1, setAmountInKg1] = useState(0);
+  const [count0, setCount0] = useState(0);
+  const [count1, setCount1] = useState(0);
   const [maxVal, setMaxVal] = useState(10);
-  
+
+  const fetchRequests = async () => {
+    try {
+      const response = await getAllLinkedRequests();
+
+      if (response) {
+        dispatch(setRequests(response));
+        console.log("Requests updated in local");
+        // console.log("Requests updated in local", response);
+      } else {
+        console.log("Unable to fetch requests");
+      }
+    } catch (error) {
+      console.error("Failed to load requests ", error.message);
+    }
+  }
+
   const foodTypes = ["RAW", "COOKED"];
   const types = ["DONATE", "RECEIVE"];
-  
+
   if (!currentUser) {
     console.error("Please login,", "No current user found");
     return;
@@ -62,14 +84,16 @@ function CreateRequest() {
           count: count1
         });
     }
-    setFood(newFood);
-    // console.log(newFood);
+    // console.log("newFood", newFood);
 
     try {
-      const requestData = await createRequest(type, foodType, food);
+      const requestData = await createRequest(type, foodType, newFood);
+      // console.log("newFood", newFood);
       if (requestData) {
         const request = requestData.data.request;
         console.log("Request successful: ", request);
+        fetchRequests();
+        navigate("/users/linked-requests");
       }
     } catch (error) {
       console.error("Failed to create request: ", error.message);
@@ -80,7 +104,7 @@ function CreateRequest() {
     const currentType = e.target.value;
     setType(currentType);
     let newMaxVal = 10;
-    if(currentType === "DONATE")
+    if (currentType === "DONATE")
       newMaxVal = 1000;
     else if (currentType === "RECEIVE")
       newMaxVal = 10;
@@ -92,7 +116,11 @@ function CreateRequest() {
     const currentFoodType = e.target.value;
     setFoodType(currentFoodType);
     setIsRawFood((prevState) => !prevState);
-    setFood([]);
+    setAmountInKg0(0);
+    setAmountInKg1(0);
+    setCount0(0);
+    setCount1(0);
+    // setFood([]); // Not working
   }
   return (
     <form
@@ -142,12 +170,15 @@ function CreateRequest() {
 
             <input
               type="number"
-              placeholder="Amount in Kg"
-              value={amountInKg0}
-              onChange={(e) => setAmountInKg0(e.target.value)}
+              value={amountInKg0 === 0 ? "" : amountInKg0}
+              onChange={(e) => {
+                const value = e.target.value === "" ? "" : Number(e.target.value);
+                setAmountInKg0(value);
+              }}
               min={0}
               max={maxVal}
               required
+              placeholder="Amount in Kg"
               className="w-full bg-gray-100 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </fieldset>
@@ -168,12 +199,15 @@ function CreateRequest() {
             </select>
             <input
               type="number"
-              placeholder="Amount in Kg"
-              value={amountInKg1}
-              onChange={(e) => setAmountInKg1(e.target.value)}
+              value={amountInKg1 === 0 ? "" : amountInKg1}
+              onChange={(e) => {
+                const value = e.target.value === "" ? "" : Number(e.target.value);
+                setAmountInKg1(value);
+              }}
               min={0}
               max={maxVal}
               required
+              placeholder="Amount in Kg"
               className="w-full bg-gray-100 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </fieldset>
@@ -193,12 +227,15 @@ function CreateRequest() {
 
             <input
               type="number"
-              placeholder="No. of Individuals"
-              value={count0}
-              onChange={(e) => setCount0(e.target.value)}
+              value={count0 === 0 ? "" : count0}
+              onChange={(e) => {
+                const value = e.target.value === "" ? "" : Number(e.target.value);
+                setCount0(value);
+              }}
               min={0}
               max={maxVal}
               required
+              placeholder="No. of Individuals"
               className="w-full bg-gray-100 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </fieldset>
@@ -214,12 +251,15 @@ function CreateRequest() {
 
             <input
               type="number"
-              placeholder="No. of Individuals"
-              value={count1}
-              onChange={(e) => setCount1(e.target.value)}
+              value={count1 === 0 ? "" : count1}
+              onChange={(e) => {
+                const value = e.target.value === "" ? "" : Number(e.target.value);
+                setCount1(value);
+              }}
               min={0}
               max={maxVal}
               required
+              placeholder="No. of Individuals"
               className="w-full bg-gray-100 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </fieldset>

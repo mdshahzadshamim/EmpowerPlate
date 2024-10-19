@@ -1,11 +1,13 @@
 import axios from "axios";
 import config from "../config/config";
 
-export const createRequest = async (type, foodType, food) => {
+export const createRequest = async (type, foodType, newFood) => {
     try {
-        let rawFood = null, cookedFood = null;
+        let rawFood = [], cookedFood = [];
         if (foodType === "RAW") {
-            rawFood = food;
+            rawFood = newFood;
+            // console.log(rawFood);
+            // console.log(newFood);
             const response = await axios.post(
                 `${config.server}/requests/create`,
                 { type, foodType, rawFood },
@@ -17,7 +19,7 @@ export const createRequest = async (type, foodType, food) => {
             else
                 throw new Error(data.message);
         } else if (foodType === "COOKED") {
-            cookedFood = food;
+            cookedFood = newFood;
             const response = await axios.post(
                 `${config.server}/requests/create`,
                 { type, foodType, cookedFood },

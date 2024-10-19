@@ -7,9 +7,6 @@ import mongoose from "mongoose";
 import { options } from "../utils/Options.js";
 import { config } from "../config/config.js";
 import { Request } from "../models/request.model.js";
-import axios from "axios";
-import nodemailer from "nodemailer";
-import { OAuth2Client } from "google-auth-library";
 import { sendEmail } from "../utils/sendEmail.js";
 
 
@@ -273,7 +270,7 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 
     // Prepare the new values to update only if they are non-empty & different
     if (username && username !== currentUser.username) updateFields.username = username;
-    if (email && email !== currentUser.email) updateFields.email = email;
+    if (email && email !== currentUser.email) {updateFields.email = email; updateFields.isVerified = false;};
     if (phone && phone !== currentUser.phone) updateFields.phone = phone;
     if (name && name !== currentUser.name) updateFields.name = name;
     if (city && city !== currentUser.city) updateFields.city = city;
@@ -434,6 +431,7 @@ const getAllLinkedRequests = asyncHandler(async (req, res) => {
 });
 
 const getPendingRequestsByAdmin = asyncHandler(async (req, res) => {
+    console.log("Trying to stream all pending requests");
     if (req.user.userType !== "ADMIN")
         throw new APIError(400, "Unauthorized User");
 
