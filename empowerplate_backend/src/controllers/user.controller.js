@@ -234,7 +234,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
         const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
 
-        console.log("Access token rehreshed");
+        console.log("Access token refreshed");
 
         return res
             .status(200)
@@ -243,7 +243,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             .json(
                 new APIResponse(
                     200,
-                    {},
+                    {
+                        user
+                    },
                     "Access token refreshed"
                 )
             )

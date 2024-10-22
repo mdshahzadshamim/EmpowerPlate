@@ -69,10 +69,10 @@ export const updateRequestStatus = async (requestId, status) => {
         throw error.response?.data?.message || error.message;
     }
 };
-export const updateRequest = async (requestId, foodType, food) => {
+export const updateRequest = async (requestId, foodType, newFood) => {
     try {
         if (foodType === "RAW") {
-            const rawFood = food;
+            const rawFood = newFood;
             const response = await axios.post(
                 `${config.server}/requests/update-request`,
                 { requestId, foodType, rawFood },
@@ -84,7 +84,7 @@ export const updateRequest = async (requestId, foodType, food) => {
             else
                 throw new Error(data.message);
         } else if (foodType === "COOKED") {
-            const cookedFood = food;
+            const cookedFood = newFood;
             const response = await axios.post(
                 `${config.server}/requests/update-request`,
                 { requestId, foodType, cookedFood },

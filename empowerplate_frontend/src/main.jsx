@@ -16,6 +16,7 @@ import CreateRequest from "./pages/request/CreateRequest";
 import LinkedRequests from "./pages/user/LinkedRequests";
 import PendingRequests from "./pages/user/PendingRequests";
 import HomePage from './pages/HomePage';
+import EditRequest from './pages/request/EditRequest';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 
@@ -60,6 +61,10 @@ const router = createBrowserRouter([
       {
         path: "/requests/create",
         element: <CreateRequest />,
+      },
+      {
+        path: "/requests/details/:_id",
+        element: <EditRequest />,
       },
     ]
   }

@@ -35,7 +35,7 @@ export const logOutUser = async () => {
         if (response.data.success)
             return response.data;
         else
-            throw new Error(data.message);
+            throw new Error(response.data.message);
     } catch (error) {
         throw error.response?.data?.message || error.message;
     }
@@ -51,7 +51,7 @@ export const refreshAccessToken = async () => {
         if (response.data.success)
             return response.data;
         else
-            throw new Error(data.message);
+            throw new Error(response.data.message);
     } catch (error) {
         throw error.response?.data?.message || error.message;
     }

@@ -22,10 +22,6 @@ function SignupForm() {
 
   const userTypes = ["ADMIN", "VOLUNTEER", "END_USER"];
 
-  if (currentUser) {
-    console.error("Please logout first, ", "to signup with current credentials");
-    return;
-  }
 
   const handleSignup = async (e) => {
     e.preventDefault();

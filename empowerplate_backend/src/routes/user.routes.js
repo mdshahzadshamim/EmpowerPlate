@@ -23,7 +23,7 @@ router.route("/register").post(registerUser);
 router.route("/login").post(logInUser);
 router.route("/logout").post(verifyJWT, logOutUser);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
-router.route("/refresh-token").get(verifyJWT, refreshAccessToken);
+router.route("/refresh-token").get(refreshAccessToken);
 router.route("/update-details").patch(verifyJWT, updateUserDetails);
 router.route("/update-password").post(verifyJWT, updateUserPassword);
 router.route("/linked-requests").get(verifyJWT, getAllLinkedRequests);

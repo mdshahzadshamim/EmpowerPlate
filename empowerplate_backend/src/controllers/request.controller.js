@@ -498,13 +498,15 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
 
 const updateRequest = asyncHandler(async (req, res) => {
     const { request } = req;
-    if (req.user.type !== "ADMIN")
+    if (req.user.userType !== "ADMIN")
         throw new APIError(400, "User not authorized: Only admins allowed");
 
     if (request.foodType === "RAW") {
         const rawFood = [];
 
-        const food = JSON.parse(req.body.rawFood);
+        const food = (req.body.rawFood === undefined
+            ? (await JSON.parse(req.body.rawFood))
+            : req.body.rawFood);
 
         food.forEach((grain) => {
             rawFood.push({
@@ -544,7 +546,9 @@ const updateRequest = asyncHandler(async (req, res) => {
     } else if (request.foodType === "COOKED") {
         const cookedFood = [];
 
-        const food = JSON.parse(req.body.cookedFood);
+        const food = (req.body.cookedFood === undefined
+            ? (await JSON.parse(req.body.cookedFood))
+            : req.body.cookedFood);
 
         food.forEach((person) => {
             cookedFood.push({

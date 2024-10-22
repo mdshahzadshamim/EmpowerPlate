@@ -12,10 +12,6 @@ function UpdateUserPassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
-  if (!currentUser) {
-    console.error("Please login,", "No current user found");
-    return;
-  }
 
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
@@ -30,6 +26,7 @@ function UpdateUserPassword() {
       console.error("Password wasn't updated ", error.message)
     }
   }
+  
   return (
     <form
       onSubmit={handlePasswordUpdate}

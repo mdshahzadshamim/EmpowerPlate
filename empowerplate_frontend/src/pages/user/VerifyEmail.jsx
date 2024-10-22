@@ -13,11 +13,6 @@ function VerifyEmail() {
 
   const dispatch = useDispatch();
 
-  if (!currentUser) {
-    console.error("Please login,", "No current user found");
-    return;
-  }
-
   const handleVerification = async (e) => {
     e.preventDefault();
 
@@ -33,6 +28,7 @@ function VerifyEmail() {
       console.error("Invalid OTP", error.message);
     }
   }
+
   return (
     <form
       onSubmit={handleVerification}

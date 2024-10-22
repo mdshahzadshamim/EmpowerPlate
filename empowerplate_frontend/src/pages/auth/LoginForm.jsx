@@ -15,10 +15,6 @@ const LogInForm = () => {
   const [password, setPassword] = useState("12345678");
   const dispatch = useDispatch();
 
-  if (currentUser) {
-    console.error("Please logout first, ", "to login with current credentials");
-    return;
-  }
 
   const handleLogin = async (e) => {
     e.preventDefault();

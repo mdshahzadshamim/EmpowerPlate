@@ -61,9 +61,9 @@ function Header() {
 
   const navItems = [
     { name: "Home", url: "/", active: true },
+    { name: "Create Request", url: "/requests/create", active: isEndUser },
     { name: "Pending Requests", url: "/users/pending-requests", active: isAdmin },
     { name: "Linked Requests", url: "/users/linked-requests", active: authStatus },
-    { name: "Create Request", url: "/requests/create", active: isEndUser },
     { name: "Sign Up", url: "/users/register", active: !authStatus },
     { name: "Log In", url: "/users/login", active: !authStatus },
   ];

@@ -17,10 +17,6 @@ function UpdateUserDetails() {
   const [name, setName] = useState(currentUser.name);
   const [city, setCity] = useState(currentUser.city);
 
-  if (!currentUser) {
-    console.error("Please login,", "No current user found");
-    return;
-  }
 
   const handleUpdate = async (e) => {
     e.preventDefault();

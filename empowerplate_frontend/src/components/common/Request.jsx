@@ -1,7 +1,9 @@
 import React, { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Request({ request }) {
   const requestRef = useRef(null);
+  const navigate = useNavigate();
   const { _id, type, foodType, currentStatus, updatedAt, rawFood = [], cookedFood = [] } = request;
 
   const color = (status) => {
@@ -28,9 +30,14 @@ function Request({ request }) {
     return `${weekday}, ${month} ${day}, ${time} (IST)`;
   }
 
+  const handleClick = () => {
+    navigate(`/requests/details/${_id}`);
+  }
+
+
 
   return (
-    <div ref={requestRef} className={`${color(currentStatus)} border p-5`}>
+    <div ref={requestRef} onClick={handleClick} className={`${color(currentStatus)} border p-5`}>
       <div className="grid grid-cols-5 gap-4">
         <div>
           <div>{type}</div>
