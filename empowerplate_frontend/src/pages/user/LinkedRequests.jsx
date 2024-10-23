@@ -32,19 +32,15 @@ function LinkedRequests() {
         if (!currentUser) {
             setRequests([]);
         } else if (currentUser) {
-            // fetchRequests();
-            if (!requestsFromState || requestsFromState.length === 0) {
-                fetchRequests();
-            } else if (requestsFromState) {
-                setRequests(requestsFromState);
-            }
+            fetchRequests();
+            // if (!requestsFromState || requestsFromState.length === 0) {
+            //     fetchRequests();
+            // } else if (requestsFromState) {
+            //     setRequests(requestsFromState);
+            // }
         }
-    }, [currentUser, requestsFromState, setRequests]);
+    }, [currentUser, setRequests]);
 
-    if (!currentUser) {
-        console.error("Please login,", "No current user found");
-        return null;
-    }
 
     return (
         <div>

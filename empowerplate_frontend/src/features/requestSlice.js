@@ -14,16 +14,19 @@ const requestSlice = createSlice({
             const incomingRequests = action.payload;
             state.requests = incomingRequests;
         },
-        updateRequest: (state, action) => {
-            const { request } = action.payload;
+        updateOneRequest    : (state, action) => {
+            console.log("In Update");
+            const request = action.payload;
             const requestId = request._id;
             const index = state.requests.findIndex(item => item._id === requestId);
             if (index !== -1) {
                 state.requests[index] = request;
+            } else {
+                state.requests.push(request);
             }
         },
     }
 });
 
-export const { setRequests, updateRequest } = requestSlice.actions;
+export const { setRequests, updateOneRequest } = requestSlice.actions;
 export default requestSlice.reducer;

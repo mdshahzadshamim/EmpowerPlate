@@ -7,12 +7,12 @@
 - Databases
    - MongoDB, with mongoose, for user & request management
    - PostgreSQL, with pg, for dedicated food-bank management
-- Frontend: React.js, _under development_
+- Frontend: React.js
 - State Management: Redux, _for React environment_
 - Authentication: JWT for Authentication
 - Password hashing: Bcrypt
 
-## Features
+## Backend Features
 - Create & Modify User
    - registerUser
    - logInUser
@@ -34,6 +34,21 @@
    - updateRequestStatus - _Admin, Volunteer_
    - cancelRequest - _Admin, End User_
    - confirmFulfillmentByUser - _End User_
+
+## Frontend Features
+- User
+   - Create
+   - Upadate
+   - Verigy Email
+   - Log In
+   - Log Out
+   - Auto Refresh Access Token
+   - Linked Requests
+   - Pending Requests
+- Request
+   - Create
+   - Conditional Update by Admin
+   - Conditional Update Status by respective Users
 
 &nbsp;
 

@@ -72,6 +72,10 @@ const requestSchema = new Schema({
         ref: "User", // A donor or a recipient
         required: true
     },
+    requesterDetails: {
+        type: [],
+        default: undefined
+    },
     type: {
         type: String,
         enum: [

@@ -31,11 +31,6 @@ function LinkedRequests() {
     }
   }, [currentUser, setRequests]);
 
-  if (!currentUser) {
-    console.error("Please login,", "No current user found");
-    return;
-  }
-
 
   return (
     <div>

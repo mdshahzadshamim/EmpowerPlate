@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { updateRequest, updateRequestStatus, getRequest } from '../../services/requestService';
+import { updateRequest, updateRequestStatus, getRequest, respondToRequest, confirmFulfillmentByUser, cancelRequest } from '../../services/requestService';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getAllLinkedRequests } from '../../services/userService';
-import { setRequests } from '../../features/requestSlice';
+import { setRequests, updateOneRequest } from '../../features/requestSlice';
 import { useParams } from 'react-router-dom';
 
 const FieldWrapper = ({ label, children }) => (
@@ -32,9 +32,12 @@ function EditRequest() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const currentUser = useSelector((state) => state.auth.user);
+    const volunteers = currentUser?.userType === "ADMIN" ? currentUser.volunteers : [];
     const { _id: requestId } = useParams();
 
     const [request, setRequest] = useState({});
+    const [requesterDetails, setRequesterDetails] = useState([]);
+    const [volunteer, setVolunteer] = useState("");
 
     const [currentStatus, setCurrentStatus] = useState("");
     const [type, setType] = useState("");
@@ -50,10 +53,11 @@ function EditRequest() {
 
     const [isEditable, setIsEditable] = useState(false);
     const [isUpdatable, setIsUpdatable] = useState(false);
-    const [sendOption, setSendOption] = useState(0);
+    const [sendOption, setSendOption] = useState(-1);
     const [availableStatusOptions, setAvailableStatusOptions] = useState([currentStatus]);
 
     const [reason, setReason] = useState("");
+    const [message, setMessage] = useState("");
 
     const maxVal = foodType === "DONATE" ? 1000 : 10;
 
@@ -68,7 +72,7 @@ function EditRequest() {
             if (type === "DONATE") {
                 if (currentStatus === "ACCEPTED") {
                     statusOptions.push("ONTHEWAY");
-                } else if (currentStatus === "HALFWAY") {
+                } else if (currentStatus === "HALFWAY" && userType === "ADMIN") {
                     statusOptions.push("FULFILLED");
                 }
             } else if (type === "RECEIVE") {
@@ -98,9 +102,11 @@ function EditRequest() {
             setRequest(thisRequest);
             setType(thisRequest.type);
             setFoodType(thisRequest.foodType);
+            setRequesterDetails(thisRequest.requesterDetails[0]);
             setCurrentStatus(thisRequest.currentStatus);
             setAvailableStatusOptions([`${thisRequest.currentStatus}`]);
             handleStatusOptions(currentUser.userType, thisRequest.type, thisRequest.foodType, thisRequest.currentStatus);
+            setVolunteer(thisRequest.volunteer);
 
             if (thisRequest.foodType === "RAW") {
                 setRawFood(thisRequest.rawFood);
@@ -111,6 +117,8 @@ function EditRequest() {
                 setCount0(thisRequest.cookedFood[0]?.count || 0);
                 setCount1(thisRequest.cookedFood[1]?.count || 0);
             }
+
+            // console.log(thisRequest);
         }
     };
 
@@ -133,12 +141,12 @@ function EditRequest() {
     };
 
     const toggleEdit = () => {
-        console.log("Toggled Edit");
+        // console.log("Toggled Edit");
         setIsEditable((prev) => !prev);
     };
 
     const toggleUpdate = () => {
-        console.log("Toggled Update");
+        // console.log("Toggled Update");
         setIsUpdatable((prev) => !prev);
     };
 
@@ -158,8 +166,9 @@ function EditRequest() {
             const requestData = await updateRequest(requestId, foodType, newFood);
             if (requestData) {
                 toggleEdit();
-                console.log("Request update successful: ", requestData.data.request);
-                await fetchRequests();
+                dispatch(updateOneRequest(requestData.data.request));
+                // console.log("Request update successful: ", requestData.data.request);
+                // await fetchRequests();
             }
         } catch (error) {
             console.error("Failed to update request: ", error.message);
@@ -168,8 +177,45 @@ function EditRequest() {
 
     const handleRequestStatusUpdate = async (e) => {
         e.preventDefault();
+        /* M A I N      F U N C T I O N*/
+        const status = currentStatus;
+        const volunteerId = volunteer;
+        console.log("RequestId: ", request._id);
+        console.log("Volunteer: ", volunteer);
+        console.log("Current Status: ", status);
         console.log("Option: ", sendOption);
-        console.log("Current Status: ", currentStatus);
+
+        if (sendOption === 0) {
+            if (!volunteer) {
+                setMessage("Please assign a volunteer");
+            }
+            else if (volunteer) {
+                setMessage("");
+                const response = await respondToRequest(requestId, volunteerId, status);
+                if (response) {
+                    dispatch(updateOneRequest(response.data.request));
+                    // console.log(response.data.request);
+                }
+            }
+        } else if (sendOption === 1) {
+            const response = await updateRequestStatus(requestId, status);
+            if (response) {
+                dispatch(updateOneRequest(response.data.request));
+                // console.log(response.data.request);
+            }
+        } else if (sendOption === 2) {
+            const response = await cancelRequest(requestId, reason);
+            if (response) {
+                dispatch(updateOneRequest(response.data.request));
+                // console.log(response.data.request);
+            }
+        } else if (sendOption === 3) {
+            const response = await confirmFulfillmentByUser(requestId, status);
+            if (response) {
+                dispatch(updateOneRequest(response.data.request));
+                // console.log(response.data.request);
+            }
+        }
 
 
         toggleUpdate();
@@ -211,7 +257,7 @@ function EditRequest() {
         if (currentUser.userType === "ADMIN" && currentStatus === "PENDING"
             && (selectedStatus === "ACCEPTED" || selectedStatus === "REJECTED")) {
             setSendOption(0);
-            console.log(0);
+            // console.log(0);
 
         } else if ((currentUser.userType === "ADMIN" || currentUser.userType === "VOLUNTEER")
             && (currentStatus === "ACCEPTED" || currentStatus === "HALFWAY")) {
@@ -220,7 +266,7 @@ function EditRequest() {
                 (currentStatus === "ACCEPTED" && selectedStatus === "ONTHEWAY") ||
                 (currentStatus === "HALFWAY" && selectedStatus === "FULFILLED"))) {
                 setSendOption(1);
-                console.log(1);
+                // console.log(1);
             } else if (type === "RECEIVE" && currentStatus === "ACCEPTED" && selectedStatus === "ONTHEWAY") {
                 setSendOption(1);
                 console.log(1);
@@ -230,7 +276,7 @@ function EditRequest() {
             && (currentStatus === "ACCEPTED" || currentStatus === "ONTHEWAY")
             && selectedStatus === "CANCELLED") {
             setSendOption(2);
-            console.log(2);
+            // console.log(2);
 
         } else if (currentUser.userType === "END_USER") {
             if (type === "DONATE" && currentStatus === "ONTHEWAY" && selectedStatus === "HALFWAY") {
@@ -238,7 +284,7 @@ function EditRequest() {
                 console.log(3);
             } else if (type === "RECEIVE" && currentStatus === "ONTHEWAY" && selectedStatus === "FULFILLED") {
                 setSendOption(3);
-                console.log(3);
+                // console.log(3);
             }
         }
 
@@ -258,6 +304,10 @@ function EditRequest() {
 
                 <FieldWrapper label="Food Type">
                     {foodType}
+                </FieldWrapper>
+
+                <FieldWrapper label="Requester Details">
+                    {requesterDetails.name}, {requesterDetails.phone}
                 </FieldWrapper>
 
                 {foodType === "RAW" && (
@@ -308,6 +358,32 @@ function EditRequest() {
                     </>
                 )}
 
+                {volunteer && (<FieldWrapper label="Volunteer">
+                    {volunteer?.name || volunteer}
+                </FieldWrapper>)}
+
+                {(!volunteer) && (<FieldWrapper label="Volunteer">
+                    <select
+                        key={volunteer || ""}
+                        value={volunteer || ""}
+                        onChange={(e) => setVolunteer(e.target.value)}
+                        className="w-full bg-gray-100 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        disabled={!isUpdatable || currentStatus !== "PENDING"}
+                        required
+                    >
+                        <option value="" disabled>
+                            Not Assigned
+                        </option>
+
+                        {volunteers.map((volunteer) => (
+                            <option key={volunteer.id} value={volunteer.id}>
+                                {volunteer.name}
+                            </option>
+                        ))}
+                    </select>
+                    <span>{message}</span>
+                </FieldWrapper>)}
+
                 <FieldWrapper label="Current Status">
                     <select
                         key={currentStatus}
@@ -327,11 +403,11 @@ function EditRequest() {
                 {(currentStatus === "CANCELLED") && (<FieldWrapper label="Reason: ">
                     <input
                         type="text"
+                        value={reason}
                         onChange={(e) => setReason(e.target.value)}
                         placeholder="I cancelled because.."
                         className="w-full bg-gray-100 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
-                    {reason}
                 </FieldWrapper>)}
 
                 {(isEditable) && (

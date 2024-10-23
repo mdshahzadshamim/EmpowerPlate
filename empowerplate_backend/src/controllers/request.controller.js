@@ -5,6 +5,7 @@ import { APIResponse } from "../utils/APIResponse.js";
 import { options } from "../utils/Options.js";
 import mongoose from "mongoose";
 import pool from "../db/postgresConnection.js";
+import { User } from "../models/user.model.js";
 
 // Food Management - To be used within request controllers: respondToRequest, confirmFulfillmentByUser
 const addRawFood = async (rawFood) => {
@@ -659,8 +660,24 @@ const cancelRequest = asyncHandler(async (req, res) => {
 
 const getRequest = asyncHandler(async (req, res) => {
     const { request } = req;
+    const requester = request.requester;
+    const volunteer = request.volunteer;
 
-    console.log("Request details returned");
+    if(volunteer) {
+        const volunteerDetails = await User.findById(volunteer, 'name');
+        if(volunteerDetails) {
+            request.volunteer = volunteerDetails;
+            // console.log("Volunteer Details: ", volunteerDetails);
+        }
+    }
+
+    const requesterDetails = await User.findById(requester, 'name phone');
+
+    if(requesterDetails) {
+        request.requesterDetails = requesterDetails;
+    }
+
+    // console.log("Request details returned", request);
 
     return res
         .status(200)

@@ -20,5 +20,6 @@ router.route("/update-request").post(verifyJWT, verifyRequest, updateRequest);
 router.route("/cancel-request").post(verifyJWT, verifyRequest, cancelRequest);
 router.route("/get-request").post(verifyJWT, verifyRequest, getRequest);
 router.route("/fulfill-request").post(verifyJWT, verifyRequest, confirmFulfillmentByUser);
+router.route("/fulfill-request").post(verifyJWT, verifyRequest, confirmFulfillmentByUser);
 
 export default router;

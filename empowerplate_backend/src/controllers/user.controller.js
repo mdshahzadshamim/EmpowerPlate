@@ -59,6 +59,38 @@ const generateOTP = () => {
     return num;
 }
 
+const getVolunteers = async () => {
+    try {
+        const result = await User.aggregate([
+            {
+                $match: {
+                    userType: "VOLUNTEER"  // Filter for volunteers only
+                }
+            },
+            {
+                $project: {
+                    _id: { $toString: "$_id" },  // Convert _id to string (optional, or just use it as ObjectId)
+                    name: 1                      // Select the name field
+                }
+            }
+        ]);
+
+        // Now, result will be an array of objects with _id and name
+        const volunteerList = result.map(volunteer => ({
+            id: volunteer._id,
+            name: volunteer.name
+        }));
+
+        // console.log(volunteerList);
+        return volunteerList;
+    } catch (error) {
+        console.error("Error fetching volunteer data: ", error);
+        throw error;
+    }
+};
+
+
+
 const registerUser = asyncHandler(async (req, res) => {
     const { username, email, phone, name, password, userType, city, passkey } = req.body;
 
@@ -141,6 +173,14 @@ const logInUser = asyncHandler(async (req, res) => {
     const loggedUser = await User.findById(user._id).select("-password -refreshToken")
 
     console.log(user.username, " logged in");
+
+    if (loggedUser.userType === "ADMIN") {
+        const volunteers = await getVolunteers();
+
+        if (volunteers) {
+            loggedUser.volunteers = volunteers;
+        }
+    }
 
     return res
         .status(200)
@@ -235,7 +275,15 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
 
         console.log("Access token refreshed");
-
+        
+        if (user.userType === "ADMIN") {
+            const volunteers = await getVolunteers();
+    
+            if (volunteers) {
+                user.volunteers = volunteers;
+            }
+        }
+        
         return res
             .status(200)
             .cookie("accessToken", accessToken, options)
@@ -272,7 +320,7 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 
     // Prepare the new values to update only if they are non-empty & different
     if (username && username !== currentUser.username) updateFields.username = username;
-    if (email && email !== currentUser.email) {updateFields.email = email; updateFields.isVerified = false;};
+    if (email && email !== currentUser.email) { updateFields.email = email; updateFields.isVerified = false; };
     if (phone && phone !== currentUser.phone) updateFields.phone = phone;
     if (name && name !== currentUser.name) updateFields.name = name;
     if (city && city !== currentUser.city) updateFields.city = city;

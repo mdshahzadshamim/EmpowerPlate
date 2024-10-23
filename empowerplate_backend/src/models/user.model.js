@@ -117,6 +117,10 @@ const userSchema = new Schema({
     refreshToken: {
         type: String
     },
+    volunteers: {
+        type: [],
+        default: undefined
+    },
 }, { timestamps: true });
 
 userSchema.pre("save", async function (next) {
