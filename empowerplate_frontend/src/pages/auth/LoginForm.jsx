@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logInUser } from "../../services/authService";
 import { login } from "../../features/authSlice";
@@ -15,6 +15,12 @@ const LogInForm = () => {
   const [password, setPassword] = useState("12345678");
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    if(currentUser) {
+      // console.log(currentUser);
+      navigate("/");
+    }
+  }, [currentUser]);
 
   const handleLogin = async (e) => {
     e.preventDefault();

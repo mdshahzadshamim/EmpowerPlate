@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { registerUser } from "../../services/userService";
 import { cities } from '../../../constantsConfig';
 import { useSelector } from 'react-redux';
@@ -22,6 +22,12 @@ function SignupForm() {
 
   const userTypes = ["ADMIN", "VOLUNTEER", "END_USER"];
 
+  useEffect(() => {
+    if(currentUser) {
+      // console.log(currentUser);
+      navigate("/");
+    }
+  }, [currentUser]);
 
   const handleSignup = async (e) => {
     e.preventDefault();
