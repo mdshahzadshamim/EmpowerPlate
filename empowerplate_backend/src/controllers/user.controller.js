@@ -5,6 +5,7 @@ import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import { options } from "../utils/Options.js";
+import { atoptions } from "../utils/ATOptions.js";
 import { config } from "../config/config.js";
 import { Request } from "../models/request.model.js";
 import { sendEmail } from "../utils/sendEmail.js";
@@ -184,7 +185,7 @@ const logInUser = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .cookie("accessToken", accessToken, options)
+        .cookie("accessToken", accessToken, atoptions)
         .cookie("refreshToken", refreshToken, options)
         .json(
             new APIResponse(
@@ -275,18 +276,18 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
 
         console.log("Access token refreshed");
-        
+
         if (user.userType === "ADMIN") {
             const volunteers = await getVolunteers();
-    
+
             if (volunteers) {
                 user.volunteers = volunteers;
             }
         }
-        
+
         return res
             .status(200)
-            .cookie("accessToken", accessToken, options)
+            .cookie("accessToken", accessToken, atoptions)
             .cookie("refreshToken", refreshToken, options)
             .json(
                 new APIResponse(
