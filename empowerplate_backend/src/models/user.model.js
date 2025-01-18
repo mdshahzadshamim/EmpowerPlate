@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { APIError } from "../utils/APIError.js";
 import { config } from "../config/config.js";
-import { regEx } from "../../constantsConfig.js";
+import { regEx, cities } from "../../constantsConfig.js";
 
 const userSchema = new Schema({
     username: {
@@ -83,9 +83,7 @@ const userSchema = new Schema({
     },
     city: {
         type: String,
-        enum: [
-            config.currentCity,
-        ],
+        enum: cities,
         uppercase: true,
         default: config.currentCity
     },

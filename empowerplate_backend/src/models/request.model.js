@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { config } from "../config/config.js";
-import { grainOrFlourTypes } from "../../constantsConfig.js";
+import { grainOrFlourTypes, cities } from "../../constantsConfig.js";
 
 const statusHistorySchema = new Schema({
     status: {
@@ -36,7 +36,7 @@ const cookedFoodSchema = new Schema({
         max: 1000,
         validate: {
             validator: Number.isInteger,
-            message: '{VALUE} is not allowed, should be an INT: 1 to 5'
+            message: '{VALUE} is not allowed, should be an INT: 1 to 10(RECEIVE)/1000(DONATE)'
         },
         required: true
     }
@@ -124,9 +124,8 @@ const requestSchema = new Schema({
     },
     city: {
         type: String,
-        enum: [
-            config.currentCity,
-        ],
+        enum: cities,
+        uppercase: true,
         default: config.currentCity
     },
     reasonToCancel: {

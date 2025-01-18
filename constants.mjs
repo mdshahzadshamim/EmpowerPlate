@@ -66,4 +66,6 @@ export const grainOrFlourTypes = [
 
 export const cities = [
   "MOHANIA",
+  "BHIKHANPUR",
+  "GACHIBOWLI",
 ];
